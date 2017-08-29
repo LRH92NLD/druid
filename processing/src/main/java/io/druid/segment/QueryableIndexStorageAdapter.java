@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import io.druid.CollectMetrics;
 import io.druid.collections.bitmap.ImmutableBitmap;
 import io.druid.java.util.common.granularity.Granularity;
 import io.druid.java.util.common.guava.Sequence;
@@ -51,6 +52,9 @@ import io.druid.segment.data.ReadableOffset;
 import io.druid.segment.filter.AndFilter;
 import io.druid.segment.historical.HistoricalCursor;
 import io.druid.segment.historical.HistoricalFloatColumnSelector;
+import org.avaje.metric.MetricManager;
+import org.avaje.metric.TimedEvent;
+import org.avaje.metric.TimedMetric;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
@@ -281,11 +285,17 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
           BitmapResultFactory<?> bitmapResultFactory =
               queryMetrics.makeBitmapResultFactory(selector.getBitmapFactory());
           long bitmapConstructionStartNs = System.nanoTime();
+          //metric bitmapConstructionTime
+          TimedMetric querySegmentBitmapConstruction = MetricManager.getTimedMetric(CollectMetrics.querySegmentBitmapConstructionName);
+          TimedEvent eventQuerySegmentBitmapConstruction = querySegmentBitmapConstruction.startEvent();
+
           // Use AndFilter.getBitmapResult to intersect the preFilters to get its short-circuiting behavior.
           ImmutableBitmap bitmapIndex = AndFilter.getBitmapIndex(selector, bitmapResultFactory, preFilters);
           preFilteredRows = bitmapIndex.size();
           offset = BitmapOffset.of(bitmapIndex, descending, totalRows);
           queryMetrics.reportBitmapConstructionTime(System.nanoTime() - bitmapConstructionStartNs);
+          //metric bitmapConstructionTime end
+          eventQuerySegmentBitmapConstruction.endWithSuccess();
         } else {
           BitmapResultFactory<?> bitmapResultFactory = new DefaultBitmapResultFactory(selector.getBitmapFactory());
           offset = BitmapOffset.of(
@@ -403,6 +413,10 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
                 @Override
                 public Cursor apply(final Interval inputInterval)
                 {
+                  //metric make cursor
+                  TimedMetric querySegmentMakeCursor = MetricManager.getTimedMetric(CollectMetrics.querySegmentMakeCursorName);
+                  TimedEvent eventQuerySegmentMakeCursor = querySegmentMakeCursor.startEvent();
+
                   final long timeStart = Math.max(interval.getStartMillis(), inputInterval.getStartMillis());
                   final long timeEnd = Math.min(interval.getEndMillis(), gran.increment(inputInterval.getStart()).getMillis());
 
@@ -796,8 +810,9 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
                     }
                   }
 
+                  QueryableIndexBaseCursor result;
                   if (postFilter == null) {
-                    return new QueryableIndexBaseCursor<Offset>()
+                    result = new QueryableIndexBaseCursor<Offset>()
                     {
                       {
                         reset();
@@ -823,7 +838,7 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
                       }
                     };
                   } else {
-                    return new QueryableIndexBaseCursor<FilteredOffset>()
+                    result = new QueryableIndexBaseCursor<FilteredOffset>()
                     {
                       private Offset baseOffset;
                       
@@ -861,7 +876,9 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
                       }
                     };
                   }
-
+                  //metric make cursor end
+                  eventQuerySegmentMakeCursor.endWithSuccess();
+                  return result;
                 }
               }
           ),

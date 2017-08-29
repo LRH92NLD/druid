@@ -20,6 +20,7 @@
 package io.druid.query.timeseries;
 
 import com.google.common.base.Function;
+import io.druid.CollectMetrics;
 import io.druid.java.util.common.guava.Sequence;
 import io.druid.query.QueryRunnerHelper;
 import io.druid.query.Result;
@@ -30,6 +31,9 @@ import io.druid.segment.Cursor;
 import io.druid.segment.SegmentMissingException;
 import io.druid.segment.StorageAdapter;
 import io.druid.segment.filter.Filters;
+import org.avaje.metric.MetricManager;
+import org.avaje.metric.TimedEvent;
+import org.avaje.metric.TimedMetric;
 
 import java.util.List;
 
@@ -62,6 +66,10 @@ public class TimeseriesQueryEngine
           @Override
           public Result<TimeseriesResultValue> apply(Cursor cursor)
           {
+            //metric for segment aggregate
+            TimedMetric querySegmentTimeseriesAggregate = MetricManager.getTimedMetric(CollectMetrics.querySegmentTimeseriesAggregateName);
+            TimedEvent eventQuerySegmentTimeseriesAggregate = querySegmentTimeseriesAggregate.startEvent();
+
             Aggregator[] aggregators = new Aggregator[aggregatorSpecs.size()];
             String[] aggregatorNames = new String[aggregatorSpecs.size()];
 
@@ -71,6 +79,8 @@ public class TimeseriesQueryEngine
             }
 
             if (skipEmptyBuckets && cursor.isDone()) {
+              //empty
+              eventQuerySegmentTimeseriesAggregate.endWithError();
               return null;
             }
 
@@ -96,6 +106,8 @@ public class TimeseriesQueryEngine
               for (Aggregator agg : aggregators) {
                 agg.close();
               }
+              //metric end
+              eventQuerySegmentTimeseriesAggregate.endWithSuccess();
             }
           }
         }

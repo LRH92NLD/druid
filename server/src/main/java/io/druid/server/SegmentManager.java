@@ -23,6 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Ordering;
 import com.google.inject.Inject;
 import com.metamx.emitter.EmittingLogger;
+import io.druid.CollectMetrics;
 import io.druid.common.guava.SettableSupplier;
 import io.druid.segment.ReferenceCountingSegment;
 import io.druid.segment.Segment;
@@ -32,6 +33,9 @@ import io.druid.timeline.DataSegment;
 import io.druid.timeline.VersionedIntervalTimeline;
 import io.druid.timeline.partition.PartitionChunk;
 import io.druid.timeline.partition.PartitionHolder;
+import org.avaje.metric.MetricManager;
+import org.avaje.metric.TimedEvent;
+import org.avaje.metric.TimedMetric;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -155,7 +159,13 @@ public class SegmentManager
    */
   public boolean loadSegment(final DataSegment segment) throws SegmentLoadingException
   {
+    //metric for load Segment from hdfs
+    TimedMetric queryLoadSegmentOnDisk = MetricManager.getTimedMetric(CollectMetrics.queryLoadSegmentOnDiskName);
+    TimedEvent eventQueryLoadSegmentOnDisk = queryLoadSegmentOnDisk.startEvent();
+
     final Segment adapter = getAdapter(segment);
+    //metric end
+    eventQueryLoadSegmentOnDisk.endWithSuccess();
 
     final SettableSupplier<Boolean> resultSupplier = new SettableSupplier<>();
 

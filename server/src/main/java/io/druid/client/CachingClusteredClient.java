@@ -44,6 +44,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.Inject;
 import com.metamx.emitter.EmittingLogger;
+import io.druid.CollectMetrics;
 import io.druid.client.cache.Cache;
 import io.druid.client.cache.CacheConfig;
 import io.druid.client.selector.QueryableDruidServer;
@@ -81,6 +82,11 @@ import io.druid.timeline.partition.PartitionChunk;
 import io.druid.timeline.partition.PartitionHolder;
 import io.druid.timeline.partition.ShardSpec;
 import org.apache.commons.codec.binary.Base64;
+import org.avaje.metric.TimedMetric;
+import org.avaje.metric.MetricManager;
+import org.avaje.metric.ValueMetric;
+import org.avaje.metric.TimedEvent;
+import org.avaje.metric.CounterMetric;
 import org.joda.time.Interval;
 
 import java.io.IOException;
@@ -294,7 +300,6 @@ public class CachingClusteredClient implements QuerySegmentWalker
         responseContext.put("uncoveredIntervalsOverflowed", uncoveredIntervalsOverflowed);
       }
     }
-
     // Let tool chest filter out unneeded segments
     final List<TimelineObjectHolder<String, ServerSelector>> filteredServersLookup =
         toolChest.filterSegments(query, serversLookup);
@@ -358,6 +363,11 @@ public class CachingClusteredClient implements QuerySegmentWalker
       }
     }
 
+    //compute cache hit rate segments.size() before and after remove
+    int segmentsSize = segments.size();
+    ValueMetric cacheHitBroker = MetricManager.getValueMetric(CollectMetrics.cacheHitBrokerName);
+    ValueMetric cacheNotHitBroker = MetricManager.getValueMetric(CollectMetrics.cacheNotHitBrokerName);
+
     if (queryCacheKey != null) {
       // cachKeys map must preserve segment ordering, in order for shards to always be combined in the same order
       Map<Pair<ServerSelector, SegmentDescriptor>, Cache.NamedKey> cacheKeys = Maps.newLinkedHashMap();
@@ -369,7 +379,6 @@ public class CachingClusteredClient implements QuerySegmentWalker
         );
         cacheKeys.put(segment, segmentCacheKey);
       }
-
       // Pull cached segments from cache and remove from set of segments to query
       final Map<Cache.NamedKey, byte[]> cachedValues;
       if (useCache) {
@@ -398,6 +407,10 @@ public class CachingClusteredClient implements QuerySegmentWalker
         }
       }
     }
+
+    //compute cache hit
+    cacheHitBroker.addEvent(segmentsSize-segments.size());
+    cacheNotHitBroker.addEvent(segments.size());
 
     // Compile list of all segments not pulled from cache
     for (Pair<ServerSelector, SegmentDescriptor> segment : segments) {
@@ -429,8 +442,22 @@ public class CachingClusteredClient implements QuerySegmentWalker
           public Sequence<T> get()
           {
             ArrayList<Sequence<T>> sequencesByInterval = Lists.newArrayList();
+
+            //timeMetric for queryFromCacheBroker
+            TimedMetric queryFromCacheBroker = MetricManager.getTimedMetric(CollectMetrics.queryFromCacheBrokerName);
+            TimedEvent eventQueryFromCacheBroker = queryFromCacheBroker.startEvent();
+
             addSequencesFromCache(sequencesByInterval);
+            eventQueryFromCacheBroker.endWithSuccess();
+
+            //timeMetric for queryFromServerBroker
+            TimedMetric queryFromServerBroker = MetricManager.getTimedMetric(CollectMetrics.queryFromServerBrokerName);
+            TimedEvent eventQueryFromServerBroker = queryFromServerBroker.startEvent();
+
             addSequencesFromServer(sequencesByInterval);
+            CounterMetric metric = MetricManager.getCounterMetric("test.metric.count");
+            metric.markEvent();
+            eventQueryFromServerBroker.endWithSuccess();
 
             return mergeCachedAndUncachedSequences(query, sequencesByInterval);
           }
@@ -498,6 +525,10 @@ public class CachingClusteredClient implements QuerySegmentWalker
               final MultipleSpecificSegmentSpec segmentSpec = new MultipleSpecificSegmentSpec(descriptors);
 
               final Sequence<T> resultSeqToAdd;
+              //timeMetric for queryFromSingleServerBroker
+              TimedMetric queryFromSingleServerBroker = MetricManager.getTimedMetric(CollectMetrics.queryFromSingleServerBrokerName);
+              TimedEvent eventQueryFromSingleServerBroker = queryFromSingleServerBroker.startEvent();
+
               if (!server.segmentReplicatable() || !populateCache || isBySegment) { // Direct server queryable
                 if (!isBySegment) {
                   resultSeqToAdd = clientQueryable.run(queryPlus.withQuerySegmentSpec(segmentSpec), responseContext);
@@ -633,6 +664,8 @@ public class CachingClusteredClient implements QuerySegmentWalker
               }
 
               listOfSequences.add(resultSeqToAdd);
+              //end for QueryFromSingleServerBroker
+              eventQueryFromSingleServerBroker.endWithSuccess();
             }
           }
         }// End of Supplier

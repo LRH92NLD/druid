@@ -30,6 +30,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
+import io.druid.CollectMetrics;
 import io.druid.client.cache.Cache;
 import io.druid.client.cache.CacheConfig;
 import io.druid.java.util.common.guava.BaseSequence;
@@ -42,6 +43,8 @@ import io.druid.query.QueryPlus;
 import io.druid.query.QueryRunner;
 import io.druid.query.QueryToolChest;
 import io.druid.query.SegmentDescriptor;
+import org.avaje.metric.CounterMetric;
+import org.avaje.metric.MetricManager;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -101,11 +104,17 @@ public class CachingQueryRunner<T> implements QueryRunner<T>
     } else {
       key = null;
     }
+    //Metric for segment cache hit on historical
+    CounterMetric cacheHitHistorical = MetricManager.getCounterMetric(CollectMetrics.cacheHitHistoricalName);
+    CounterMetric cacheNotHitHistorical = MetricManager.getCounterMetric(CollectMetrics.cacheNotHitHistoricalName);
 
     if (useCache) {
       final Function cacheFn = strategy.pullFromCache();
       final byte[] cachedResult = cache.get(key);
       if (cachedResult != null) {
+        //cache hit counter
+        cacheHitHistorical.markEvent();
+
         final TypeReference cacheObjectClazz = strategy.getCacheObjectClazz();
 
         return Sequences.map(
@@ -140,6 +149,8 @@ public class CachingQueryRunner<T> implements QueryRunner<T>
         );
       }
     }
+    //cache not hit counter
+    cacheNotHitHistorical.markEvent();
 
     final Collection<ListenableFuture<?>> cacheFutures = Collections.synchronizedList(Lists.<ListenableFuture<?>>newLinkedList());
     if (populateCache) {

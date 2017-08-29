@@ -21,8 +21,12 @@ package io.druid.collections.spatial;
 
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
+import io.druid.CollectMetrics;
 import io.druid.collections.bitmap.BitmapFactory;
 import io.druid.collections.bitmap.ImmutableBitmap;
+import org.avaje.metric.MetricManager;
+import org.avaje.metric.TimedEvent;
+import org.avaje.metric.TimedMetric;
 
 import java.nio.ByteBuffer;
 import java.util.Iterator;
@@ -152,12 +156,19 @@ public class ImmutableNode
 
   public ImmutableBitmap getImmutableBitmap()
   {
+    //metric for load bitmap offheap
+    TimedMetric queryLoadBitmapOffHeap = MetricManager.getTimedMetric(CollectMetrics.queryLoadBitmapOffHeapName);
+    TimedEvent eventQueryLoadBitmapOffHeap = queryLoadBitmapOffHeap.startEvent();
+
     final int sizePosition = initialOffset + offsetFromInitial + HEADER_NUM_BYTES + 2 * numDims * Floats.BYTES;
     int numBytes = data.getInt(sizePosition);
     data.position(sizePosition + Ints.BYTES);
     ByteBuffer tmpBuffer = data.slice();
     tmpBuffer.limit(numBytes);
-    return bitmapFactory.mapImmutableBitmap(tmpBuffer.asReadOnlyBuffer());
+    ImmutableBitmap result = bitmapFactory.mapImmutableBitmap(tmpBuffer.asReadOnlyBuffer());
+    //metric end
+    eventQueryLoadBitmapOffHeap.endWithSuccess();
+    return result;
   }
 
   @SuppressWarnings("ArgumentParameterSwap")

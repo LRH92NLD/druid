@@ -32,6 +32,17 @@
     <dependencies>
         <dependency>
             <groupId>io.druid</groupId>
+            <artifactId>metrics_test</artifactId>
+            <version>${project.parent.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.kafka</groupId>
+                    <artifactId>kafka_2.11</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.druid</groupId>
             <artifactId>java-util</artifactId>
             <version>${project.parent.version}</version>
                 <exclusions>

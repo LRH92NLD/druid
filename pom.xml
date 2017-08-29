@@ -135,6 +135,7 @@
         <module>extensions-contrib/kafka-emitter</module>
         <!-- distribution packaging -->
         <module>distribution</module>
+        <module>metrics_test</module>
     </modules>
 
     <dependencyManagement>

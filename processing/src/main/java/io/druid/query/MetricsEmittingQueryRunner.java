@@ -20,10 +20,14 @@
 package io.druid.query;
 
 import com.metamx.emitter.service.ServiceEmitter;
+import io.druid.CollectMetrics;
 import io.druid.java.util.common.guava.LazySequence;
 import io.druid.java.util.common.guava.Sequence;
 import io.druid.java.util.common.guava.SequenceWrapper;
 import io.druid.java.util.common.guava.Sequences;
+import org.avaje.metric.MetricManager;
+import org.avaje.metric.TimedEvent;
+import org.avaje.metric.TimedMetric;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -96,11 +100,18 @@ public class MetricsEmittingQueryRunner<T> implements QueryRunner<T>
         new SequenceWrapper()
         {
           private long startTimeNs;
+          //query/segment/time
+          private TimedMetric querySegmentTime = MetricManager.getTimedMetric(CollectMetrics.querySegmentTimeName);
+          private TimedEvent eventQuerySegmentTime;
 
           @Override
           public void before()
           {
             startTimeNs = System.nanoTime();
+            //query/segment/time start
+            if(queryRunner instanceof ReferenceCountingSegmentQueryRunner) {
+              eventQuerySegmentTime = querySegmentTime.startEvent();
+            }
           }
 
           @Override
@@ -112,6 +123,11 @@ public class MetricsEmittingQueryRunner<T> implements QueryRunner<T>
               queryMetrics.status("short");
             }
             long timeTakenNs = System.nanoTime() - startTimeNs;
+            //query/segment/time end
+            if(queryRunner instanceof ReferenceCountingSegmentQueryRunner) {
+              eventQuerySegmentTime.endWithSuccess();
+            }
+
             reportMetric.accept(queryMetrics, timeTakenNs);
 
             if (creationTimeNs > 0) {

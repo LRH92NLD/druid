@@ -19,15 +19,18 @@
 
 package io.druid.cli;
 
+import cn.enncloud.common.util.EnnException;
 import com.google.inject.Injector;
 import io.airlift.airline.Cli;
 import io.airlift.airline.Help;
 import io.airlift.airline.ParseException;
+import io.druid.CollectMetrics;
 import io.druid.cli.validate.DruidJsonValidator;
 import io.druid.guice.ExtensionsConfig;
 import io.druid.guice.GuiceInjectors;
 import io.druid.initialization.Initialization;
 
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.ServiceLoader;
 
@@ -45,6 +48,20 @@ public class Main
   @SuppressWarnings("unchecked")
   public static void main(String[] args)
   {
+    if(args[0].equals("server")){
+
+      try {
+        CollectMetrics.startMetricsCollector();
+      }catch (EnnException e){
+        System.out.println("EnnException");
+        System.exit(1);
+
+      }catch (UnknownHostException e){
+        System.out.println("UnknownHostException");
+        System.exit(1);
+      }
+    }
+
     final Cli.CliBuilder<Runnable> builder = Cli.builder("druid");
 
     builder.withDescription("Druid command-line runner.")

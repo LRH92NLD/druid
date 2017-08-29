@@ -31,6 +31,7 @@ import com.google.common.io.CountingOutputStream;
 import com.google.inject.Inject;
 import com.metamx.emitter.EmittingLogger;
 import com.metamx.emitter.service.ServiceEmitter;
+import io.druid.CollectMetrics;
 import io.druid.client.DirectDruidClient;
 import io.druid.guice.LazySingleton;
 import io.druid.guice.annotations.Json;
@@ -59,6 +60,9 @@ import io.druid.server.security.AuthConfig;
 import io.druid.server.security.AuthorizationInfo;
 import io.druid.server.security.Resource;
 import io.druid.server.security.ResourceType;
+import org.avaje.metric.MetricManager;
+import org.avaje.metric.TimedEvent;
+import org.avaje.metric.TimedMetric;
 import org.joda.time.DateTime;
 
 import javax.servlet.http.HttpServletRequest;
@@ -185,6 +189,9 @@ public class QueryResource implements QueryCountStatsProvider
       @Context final HttpServletRequest req // used to get request content-type, remote address and AuthorizationInfo
   ) throws IOException
   {
+    // query/time metric start
+    TimedMetric queryTime = MetricManager.getTimedMetric(CollectMetrics.queryTimeName);
+    TimedEvent eventQueryTime = queryTime.startEvent();
     // Both startMs and startNs are needed: startMs is absolute time and startNs is high-resolution.
     final long startMs = System.currentTimeMillis();
     final long startNs = System.nanoTime();
@@ -242,8 +249,13 @@ public class QueryResource implements QueryCountStatsProvider
             ImmutableMap.of (HDR_IF_NONE_MATCH, prevEtag)
         );
       }
+      //test for sequence create time  queryTimeSequenceName
+      TimedMetric queryTimeSequence = MetricManager.getTimedMetric(CollectMetrics.queryTimeSequenceName);
+      TimedEvent eventQueryTimeSequence = queryTimeSequence.startEvent();
 
       final Sequence res = QueryPlus.wrap(query).run(texasRanger, responseContext);
+      //metric end
+      eventQueryTimeSequence.endWithSuccess();
 
       if (prevEtag != null && prevEtag.equals(responseContext.get(HDR_ETAG))) {
         return Response.notModified().build();
@@ -255,8 +267,13 @@ public class QueryResource implements QueryCountStatsProvider
       } else {
         results = res;
       }
+      //test for yielder create time queryTimeToYielderName
+      TimedMetric queryTimeToYielder = MetricManager.getTimedMetric(CollectMetrics.queryTimeToYielderName);
+      TimedEvent eventQueryTimeToYielder = queryTimeToYielder.startEvent();
 
       final Yielder yielder = Yielders.each(results);
+      //metric end
+      eventQueryTimeToYielder.endWithSuccess();
 
       try {
         final Query theQuery = query;
@@ -298,6 +315,9 @@ public class QueryResource implements QueryCountStatsProvider
                         }
 
                         final long queryTimeNs = System.nanoTime() - startNs;
+                        //query/time success
+                        eventQueryTime.endWithSuccess();
+
                         QueryMetrics queryMetrics = DruidMetrics.makeRequestMetrics(
                             queryMetricsFactory,
                             theToolChest,
@@ -380,6 +400,9 @@ public class QueryResource implements QueryCountStatsProvider
         log.warn(e, "Exception while processing queryId [%s]", queryId);
         interruptedQueryCount.incrementAndGet();
         final long queryTimeNs = System.nanoTime() - startNs;
+        //query/time failed
+        eventQueryTime.endWithError();
+
         QueryMetrics queryMetrics = DruidMetrics.makeRequestMetrics(
             queryMetricsFactory,
             toolChest,
@@ -425,6 +448,9 @@ public class QueryResource implements QueryCountStatsProvider
 
       try {
         final long queryTimeNs = System.nanoTime() - startNs;
+        //query/time failed
+        eventQueryTime.endWithError();
+
         QueryMetrics queryMetrics = DruidMetrics.makeRequestMetrics(
             queryMetricsFactory,
             toolChest,
