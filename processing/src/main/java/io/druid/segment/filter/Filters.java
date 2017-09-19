@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import io.druid.CollectMetrics;
 import io.druid.collections.bitmap.ImmutableBitmap;
 import io.druid.java.util.common.guava.FunctionalIterable;
 import io.druid.query.BitmapResultFactory;
@@ -54,6 +55,8 @@ import it.unimi.dsi.fastutil.ints.AbstractIntIterator;
 import it.unimi.dsi.fastutil.ints.IntIterable;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
+import org.avaje.metric.MetricManager;
+import org.avaje.metric.TimedEvent;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -216,7 +219,11 @@ public class Filters
           @Override
           public ImmutableBitmap next()
           {
-            return bitmapIndex.getBitmap(iterator.nextInt());
+            //metric for queryLoadBitmapOthers
+            TimedEvent eventQueryLoadBitmapOthers = CollectMetrics.queryLoadBitmapOthers.startEvent();
+            ImmutableBitmap result = bitmapIndex.getBitmap(iterator.nextInt());
+            eventQueryLoadBitmapOthers.endWithSuccess();
+            return result;
           }
 
           @Override

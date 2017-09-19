@@ -25,9 +25,8 @@ import io.druid.java.util.common.guava.LazySequence;
 import io.druid.java.util.common.guava.Sequence;
 import io.druid.java.util.common.guava.SequenceWrapper;
 import io.druid.java.util.common.guava.Sequences;
-import org.avaje.metric.MetricManager;
 import org.avaje.metric.TimedEvent;
-import org.avaje.metric.TimedMetric;
+import io.druid.java.util.common.logger.Logger;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -37,6 +36,7 @@ import java.util.function.ObjLongConsumer;
  */
 public class MetricsEmittingQueryRunner<T> implements QueryRunner<T>
 {
+  private static final Logger log = new Logger(MetricsEmittingQueryRunner.class);
   private final ServiceEmitter emitter;
   private final QueryToolChest<T, ? extends Query<T>> queryToolChest;
   private final QueryRunner<T> queryRunner;
@@ -84,6 +84,9 @@ public class MetricsEmittingQueryRunner<T> implements QueryRunner<T>
     );
   }
 
+  //query/segment/time
+  TimedEvent eventQuerySegmentTime;
+
   @Override
   public Sequence<T> run(final QueryPlus<T> queryPlus, final Map<String, Object> responseContext)
   {
@@ -100,9 +103,7 @@ public class MetricsEmittingQueryRunner<T> implements QueryRunner<T>
         new SequenceWrapper()
         {
           private long startTimeNs;
-          //query/segment/time
-          private TimedMetric querySegmentTime = MetricManager.getTimedMetric(CollectMetrics.querySegmentTimeName);
-          private TimedEvent eventQuerySegmentTime;
+
 
           @Override
           public void before()
@@ -110,7 +111,8 @@ public class MetricsEmittingQueryRunner<T> implements QueryRunner<T>
             startTimeNs = System.nanoTime();
             //query/segment/time start
             if(queryRunner instanceof ReferenceCountingSegmentQueryRunner) {
-              eventQuerySegmentTime = querySegmentTime.startEvent();
+              log.warn("querySegmentTime start!");
+              eventQuerySegmentTime = CollectMetrics.querySegmentTime.startEvent();
             }
           }
 
@@ -125,6 +127,7 @@ public class MetricsEmittingQueryRunner<T> implements QueryRunner<T>
             long timeTakenNs = System.nanoTime() - startTimeNs;
             //query/segment/time end
             if(queryRunner instanceof ReferenceCountingSegmentQueryRunner) {
+              log.warn("querySegmentTime end!");
               eventQuerySegmentTime.endWithSuccess();
             }
 

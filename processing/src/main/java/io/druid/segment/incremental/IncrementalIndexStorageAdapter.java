@@ -23,6 +23,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import io.druid.CollectMetrics;
 import io.druid.java.util.common.granularity.Granularity;
 import io.druid.java.util.common.guava.Sequence;
 import io.druid.java.util.common.guava.Sequences;
@@ -56,10 +57,12 @@ import io.druid.segment.column.ValueType;
 import io.druid.segment.data.Indexed;
 import io.druid.segment.data.ListIndexed;
 import io.druid.segment.filter.BooleanValueMatcher;
+import org.avaje.metric.TimedEvent;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
 import javax.annotation.Nullable;
+import java.sql.Time;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -238,8 +241,10 @@ public class IncrementalIndexStorageAdapter implements StorageAdapter
           public Cursor apply(@Nullable final Interval interval)
           {
             final long timeStart = Math.max(interval.getStartMillis(), actualInterval.getStartMillis());
+            //metric queryIncrementalMakeCursor
+            TimedEvent eventQueryIncrementalMakeCursor = CollectMetrics.queryIncrementalMakeCursor.startEvent();
 
-            return new Cursor()
+            Cursor result = new Cursor()
             {
               private final ValueMatcher filterMatcher = makeFilterMatcher(filter, this);
               private final int maxRowIndex;
@@ -630,6 +635,9 @@ public class IncrementalIndexStorageAdapter implements StorageAdapter
                 return index.getCapabilities(columnName);
               }
             };
+            //metric end
+            eventQueryIncrementalMakeCursor.endWithSuccess();
+            return result;
           }
         }
     );

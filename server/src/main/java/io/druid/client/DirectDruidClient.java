@@ -67,9 +67,7 @@ import io.druid.query.ResourceLimitExceededException;
 import io.druid.query.Result;
 import io.druid.query.aggregation.MetricManipulatorFns;
 import io.druid.server.initialization.ServerConfig;
-import org.avaje.metric.MetricManager;
 import org.avaje.metric.TimedEvent;
-import org.avaje.metric.TimedMetric;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferInputStream;
 import org.jboss.netty.handler.codec.http.HttpChunk;
@@ -204,8 +202,7 @@ public class DirectDruidClient<T> implements QueryRunner<T>
 
       final long requestStartTimeNs = System.nanoTime();
       //query/node/ttfb metric start
-      TimedMetric queryNodeTtfb = MetricManager.getTimedMetric(CollectMetrics.queryNodeTtfbName);
-      TimedEvent eventQueryNodeTtfb = queryNodeTtfb.startEvent();
+      TimedEvent eventQueryNodeTtfb = CollectMetrics.queryNodeTtfb.startEvent();
 
       long timeoutAt = ((Long) context.get(QUERY_FAIL_TIME)).longValue();
       long maxScatterGatherBytes = QueryContexts.getMaxScatterGatherBytes(query);
@@ -221,7 +218,6 @@ public class DirectDruidClient<T> implements QueryRunner<T>
         private QueryMetrics<? super Query<T>> queryMetrics;
         private long responseStartTimeNs;
         //query/node/time metric
-        TimedMetric queryNodeTime = MetricManager.getTimedMetric(CollectMetrics.queryNodeTimeName);
         TimedEvent eventQueryNodeTime;
 
         private QueryMetrics<? super Query<T>> acquireResponseMetrics()
@@ -244,7 +240,7 @@ public class DirectDruidClient<T> implements QueryRunner<T>
           //query/node/ttfb end
           eventQueryNodeTtfb.endWithSuccess();
           //query/node/time start
-          eventQueryNodeTime = queryNodeTime.startEvent();
+          eventQueryNodeTime = CollectMetrics.queryNodeTime.startEvent();
 
           acquireResponseMetrics().reportNodeTimeToFirstByte(responseStartTimeNs - requestStartTimeNs).emit(emitter);
 

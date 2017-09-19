@@ -36,6 +36,7 @@ import com.google.common.io.Files;
 import com.google.common.primitives.Ints;
 import com.google.inject.Inject;
 import com.metamx.emitter.EmittingLogger;
+import io.druid.CollectMetrics;
 import io.druid.collections.bitmap.BitmapFactory;
 import io.druid.collections.bitmap.ConciseBitmapFactory;
 import io.druid.collections.bitmap.ImmutableBitmap;
@@ -83,6 +84,7 @@ import io.druid.segment.serde.LongGenericColumnPartSerde;
 import io.druid.segment.serde.LongGenericColumnSupplier;
 import io.druid.segment.serde.SpatialIndexColumnPartSupplier;
 import org.apache.commons.io.FileUtils;
+import org.avaje.metric.TimedEvent;
 import org.joda.time.Interval;
 
 import java.io.ByteArrayOutputStream;
@@ -217,7 +219,12 @@ public class IndexIO
     final IndexLoader loader = indexLoaders.get(version);
 
     if (loader != null) {
-      return loader.load(inDir, mapper);
+      //metric queryLoadSegmentInMemory
+      TimedEvent eventQueryLoadSegmentInMemory = CollectMetrics.queryLoadSegmentInMemory.startEvent();
+
+      QueryableIndex result = loader.load(inDir, mapper);
+      eventQueryLoadSegmentInMemory.endWithSuccess();
+      return result;
     } else {
       throw new ISE("Unknown index version[%s]", version);
     }

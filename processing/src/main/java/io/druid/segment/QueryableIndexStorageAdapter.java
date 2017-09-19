@@ -52,11 +52,10 @@ import io.druid.segment.data.ReadableOffset;
 import io.druid.segment.filter.AndFilter;
 import io.druid.segment.historical.HistoricalCursor;
 import io.druid.segment.historical.HistoricalFloatColumnSelector;
-import org.avaje.metric.MetricManager;
 import org.avaje.metric.TimedEvent;
-import org.avaje.metric.TimedMetric;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
+import io.druid.java.util.common.logger.Logger;
 
 import javax.annotation.Nullable;
 import java.io.Closeable;
@@ -71,6 +70,7 @@ import java.util.Objects;
 public class QueryableIndexStorageAdapter implements StorageAdapter
 {
   private final QueryableIndex index;
+  private static final Logger log = new Logger(QueryableIndexStorageAdapter.class);
 
   public QueryableIndexStorageAdapter(
       QueryableIndex index
@@ -198,6 +198,7 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
     return getMaxTime();
   }
 
+
   @Override
   public Sequence<Cursor> makeCursors(
       Filter filter,
@@ -255,6 +256,8 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
     final List<Filter> postFilters = new ArrayList<>();
     int preFilteredRows = totalRows;
     if (filter == null) {
+      log.warn("filter is null");
+
       preFilters = Collections.emptyList();
       offset = new NoFilterOffset(0, totalRows, descending);
     } else {
@@ -278,25 +281,28 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
         }
       }
 
+      log.warn("preFilters.size:" + preFilters.size());
+      log.warn("postFilters.size:" + postFilters.size());
+
       if (preFilters.size() == 0) {
         offset = new NoFilterOffset(0, index.getNumRows(), descending);
       } else {
+        //metric bitmapConstructionTime
+        TimedEvent eventQuerySegmentBitmapConstruction = CollectMetrics.querySegmentBitmapConstruction.startEvent();
+        long time_start = System.nanoTime();
+
         if (queryMetrics != null) {
           BitmapResultFactory<?> bitmapResultFactory =
               queryMetrics.makeBitmapResultFactory(selector.getBitmapFactory());
           long bitmapConstructionStartNs = System.nanoTime();
-          //metric bitmapConstructionTime
-          TimedMetric querySegmentBitmapConstruction = MetricManager.getTimedMetric(CollectMetrics.querySegmentBitmapConstructionName);
-          TimedEvent eventQuerySegmentBitmapConstruction = querySegmentBitmapConstruction.startEvent();
-
           // Use AndFilter.getBitmapResult to intersect the preFilters to get its short-circuiting behavior.
           ImmutableBitmap bitmapIndex = AndFilter.getBitmapIndex(selector, bitmapResultFactory, preFilters);
           preFilteredRows = bitmapIndex.size();
           offset = BitmapOffset.of(bitmapIndex, descending, totalRows);
           queryMetrics.reportBitmapConstructionTime(System.nanoTime() - bitmapConstructionStartNs);
-          //metric bitmapConstructionTime end
-          eventQuerySegmentBitmapConstruction.endWithSuccess();
         } else {
+          log.warn("queryMetrics is null");
+
           BitmapResultFactory<?> bitmapResultFactory = new DefaultBitmapResultFactory(selector.getBitmapFactory());
           offset = BitmapOffset.of(
               AndFilter.getBitmapIndex(selector, bitmapResultFactory, preFilters),
@@ -304,6 +310,10 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
               totalRows
           );
         }
+        //metric bitmapConstructionTime end
+        eventQuerySegmentBitmapConstruction.endWithSuccess();
+        long time = System.nanoTime() - time_start;
+        log.warn("metric bitmapConstructionTime:"+time);
       }
     }
 
@@ -413,9 +423,9 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
                 @Override
                 public Cursor apply(final Interval inputInterval)
                 {
+                  log.warn("querySegmentMakeCursor start");
                   //metric make cursor
-                  TimedMetric querySegmentMakeCursor = MetricManager.getTimedMetric(CollectMetrics.querySegmentMakeCursorName);
-                  TimedEvent eventQuerySegmentMakeCursor = querySegmentMakeCursor.startEvent();
+                  TimedEvent eventQuerySegmentMakeCursor = CollectMetrics.querySegmentMakeCursor.startEvent();
 
                   final long timeStart = Math.max(interval.getStartMillis(), inputInterval.getStartMillis());
                   final long timeEnd = Math.min(interval.getEndMillis(), gran.increment(inputInterval.getStart()).getMillis());
@@ -876,6 +886,7 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
                       }
                     };
                   }
+                  log.warn("querySegmentMakeCursor end");
                   //metric make cursor end
                   eventQuerySegmentMakeCursor.endWithSuccess();
                   return result;

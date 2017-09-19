@@ -31,9 +31,8 @@ import io.druid.segment.Cursor;
 import io.druid.segment.SegmentMissingException;
 import io.druid.segment.StorageAdapter;
 import io.druid.segment.filter.Filters;
-import org.avaje.metric.MetricManager;
 import org.avaje.metric.TimedEvent;
-import org.avaje.metric.TimedMetric;
+import io.druid.java.util.common.logger.Logger;
 
 import java.util.List;
 
@@ -41,6 +40,7 @@ import java.util.List;
  */
 public class TimeseriesQueryEngine
 {
+  private static final Logger log = new Logger(TimeseriesQueryEngine.class);
   public Sequence<Result<TimeseriesResultValue>> process(final TimeseriesQuery query, final StorageAdapter adapter)
   {
     if (adapter == null) {
@@ -67,8 +67,7 @@ public class TimeseriesQueryEngine
           public Result<TimeseriesResultValue> apply(Cursor cursor)
           {
             //metric for segment aggregate
-            TimedMetric querySegmentTimeseriesAggregate = MetricManager.getTimedMetric(CollectMetrics.querySegmentTimeseriesAggregateName);
-            TimedEvent eventQuerySegmentTimeseriesAggregate = querySegmentTimeseriesAggregate.startEvent();
+            TimedEvent eventQuerySegmentTimeseriesAggregate = CollectMetrics.querySegmentTimeseriesAggregate.startEvent();
 
             Aggregator[] aggregators = new Aggregator[aggregatorSpecs.size()];
             String[] aggregatorNames = new String[aggregatorSpecs.size()];
@@ -79,6 +78,7 @@ public class TimeseriesQueryEngine
             }
 
             if (skipEmptyBuckets && cursor.isDone()) {
+              log.warn("TimeseriesAggregate is error!");
               //empty
               eventQuerySegmentTimeseriesAggregate.endWithError();
               return null;
@@ -96,6 +96,7 @@ public class TimeseriesQueryEngine
 
               for (int i = 0; i < aggregatorSpecs.size(); i++) {
                 bob.addMetric(aggregatorNames[i], aggregators[i]);
+                log.warn("aggregatorName["+i+"]:"+aggregatorNames[i]);
               }
 
               Result<TimeseriesResultValue> retVal = bob.build();
@@ -108,6 +109,7 @@ public class TimeseriesQueryEngine
               }
               //metric end
               eventQuerySegmentTimeseriesAggregate.endWithSuccess();
+              log.warn("TimeseriesAggregate is over!");
             }
           }
         }

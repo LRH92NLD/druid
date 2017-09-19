@@ -43,8 +43,6 @@ import io.druid.query.QueryPlus;
 import io.druid.query.QueryRunner;
 import io.druid.query.QueryToolChest;
 import io.druid.query.SegmentDescriptor;
-import org.avaje.metric.CounterMetric;
-import org.avaje.metric.MetricManager;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -104,16 +102,18 @@ public class CachingQueryRunner<T> implements QueryRunner<T>
     } else {
       key = null;
     }
-    //Metric for segment cache hit on historical
-    CounterMetric cacheHitHistorical = MetricManager.getCounterMetric(CollectMetrics.cacheHitHistoricalName);
-    CounterMetric cacheNotHitHistorical = MetricManager.getCounterMetric(CollectMetrics.cacheNotHitHistoricalName);
+
+    log.warn("useCache:" + useCache);
 
     if (useCache) {
       final Function cacheFn = strategy.pullFromCache();
       final byte[] cachedResult = cache.get(key);
+      log.warn("cachedResult:"+cachedResult);
+
       if (cachedResult != null) {
+        log.warn("cacheHitHistorical increment");
         //cache hit counter
-        cacheHitHistorical.markEvent();
+        CollectMetrics.cacheHitHistorical.markEvent();
 
         final TypeReference cacheObjectClazz = strategy.getCacheObjectClazz();
 
@@ -149,8 +149,9 @@ public class CachingQueryRunner<T> implements QueryRunner<T>
         );
       }
     }
+    log.warn("cacheNotHitHistorical increment");
     //cache not hit counter
-    cacheNotHitHistorical.markEvent();
+    CollectMetrics.cacheNotHitHistorical.markEvent();
 
     final Collection<ListenableFuture<?>> cacheFutures = Collections.synchronizedList(Lists.<ListenableFuture<?>>newLinkedList());
     if (populateCache) {

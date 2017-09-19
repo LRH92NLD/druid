@@ -26,6 +26,10 @@ import cn.enncloud.metric.config.EnnMetricsConfig;
 import cn.enncloud.metric.config.OpentsdbConfig;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import org.avaje.metric.CounterMetric;
+import org.avaje.metric.MetricManager;
+import org.avaje.metric.TimedMetric;
+import org.avaje.metric.ValueMetric;
 
 import java.net.UnknownHostException;
 
@@ -50,28 +54,54 @@ public class CollectMetrics {
     }
     //time for query
     public static final String queryTimeName = "metrics.collect.test.QueryTime";
-    public static final String queryTimeSequenceName = "metrics.collect.test.QueryTimeSequence";
-    public static final String queryTimeToYielderName = "metrics.collect.test.QueryTimeToYielder";
-    public static final String queryFromCacheBrokerName = "metrics.collect.test.queryFromCacheBroker";
-    public static final String queryFromServerBrokerName = "metrics.collect.test.queryFromServerBroker";
-    public static final String queryFromSingleServerBrokerName = "metrics.collect.test.queryFromSingleServerBroker";
+    public static final String queryTimeSequenceName = "metrics.collect.test.SequenceQueryTime";
+    public static final String queryTimeToYielderName = "metrics.collect.test.ToYielderQueryTime";
+    public static final String queryFromCacheBrokerName = "metrics.collect.test.BrokerCacheQueryTime";
+    public static final String queryFromServerBrokerName = "metrics.collect.test.AllServersQueryTime";
+    public static final String queryFromSingleServerBrokerName = "metrics.collect.test.SingleServerQueryTime";
     public static final String queryNodeTtfbName = "metrics.collect.test.QueryNodeTtfb";
     public static final String queryNodeTimeName = "metrics.collect.test.QueryNodeTime";
-    public static final String querySegmentTimeName = "metrics.collect.test.QuerySegmentTime";
-    public static final String queryNodeMergeResultsName = "metrics.collect.test.QueryNodeMergeResults"; //all query type call this method
+    public static final String querySegmentTimeName = "metrics.collect.test.SingleSegmentQueryTime";
+    public static final String queryNodeMergeResultsName = "metrics.collect.test.MergeResultsOnSingleNode"; //all query type call this method
 
     //time for io
-    public static final String querySegmentTimeseriesAggregateName = "metrics.collect.test.QuerySegmentTimeseriesAggregate";
-    public static final String querySegmentBitmapConstructionName = "metrics.collect.test.QuerySegmentBitmapConstruction";//prefilters not null construct bitmap
-    public static final String querySegmentMakeCursorName = "metrics.collect.test.QuerySegmentMakeCursor";//cursor create after postfilters
-    public static final String queryLoadSegmentOnDiskName = "metrics.collect.test.QueryLoadSegmentOnDisk";
-    public static final String queryLoadBitmapOffHeapName = "metrics.collect.test.QueryLoadBitmapOffheap";
+    public static final String querySegmentTimeseriesAggregateName = "metrics.collect.test.TimeseriesAggregateOnSingleSegment";
+    public static final String querySegmentBitmapConstructionName = "metrics.collect.test.BitmapConstructionOnSegment";//prefilters not null construct bitmap
+    public static final String querySegmentMakeCursorName = "metrics.collect.test.SegmentMakeCursor";//queryableindex cursor create after postfilters
+    public static final String queryIncrementalMakeCursorName = "metrics.collect.test.IncrementalMakeCursor";//realtime cursor create
+    public static final String queryLoadSegmentInMemoryName = "metrics.collect.test.LoadSegmentInMemory";//queryableindex create for load segment
+    public static final String queryLoadSegmentOnDiskName = "metrics.collect.test.LoadSegmentOnDisk";
+    public static final String queryLoadBitmapOffHeapName = "metrics.collect.test.LoadBitmapOffheap";
+    public static final String queryLoadBitmapOthersName = "metrics.collect.test.LoadBitmapOthers";
 
     //cache hit rate
     public static final String cacheHitBrokerName = "metrics.collect.test.CacheHitBroker";
     public static final String cacheNotHitBrokerName = "metrics.collect.test.CacheNotHitBroker";
     public static final String cacheHitHistoricalName = "metrics.collect.test.CacheHitHistorical";
     public static final String cacheNotHitHistoricalName = "metrics.collect.test.CacheNotHitHistorical";
+
+    public static TimedMetric queryTime = MetricManager.getTimedMetric(CollectMetrics.queryTimeName);
+    public static TimedMetric queryTimeSequence = MetricManager.getTimedMetric(CollectMetrics.queryTimeSequenceName);
+    public static TimedMetric queryTimeToYielder = MetricManager.getTimedMetric(CollectMetrics.queryTimeToYielderName);
+    public static TimedMetric queryFromCacheBroker = MetricManager.getTimedMetric(CollectMetrics.queryFromCacheBrokerName);
+    public static TimedMetric queryFromServerBroker = MetricManager.getTimedMetric(CollectMetrics.queryFromServerBrokerName);
+    public static ValueMetric cacheHitBroker = MetricManager.getValueMetric(CollectMetrics.cacheHitBrokerName);
+    public static ValueMetric cacheNotHitBroker = MetricManager.getValueMetric(CollectMetrics.cacheNotHitBrokerName);
+    public static TimedMetric queryFromSingleServerBroker = MetricManager.getTimedMetric(CollectMetrics.queryFromSingleServerBrokerName);
+    public static TimedMetric queryNodeTtfb = MetricManager.getTimedMetric(CollectMetrics.queryNodeTtfbName);
+    public static TimedMetric queryNodeTime = MetricManager.getTimedMetric(CollectMetrics.queryNodeTimeName);
+    public static TimedMetric querySegmentTime = MetricManager.getTimedMetric(CollectMetrics.querySegmentTimeName);
+    public static TimedMetric queryNodeMergeResults = MetricManager.getTimedMetric(CollectMetrics.queryNodeMergeResultsName);
+    public static TimedMetric querySegmentTimeseriesAggregate = MetricManager.getTimedMetric(CollectMetrics.querySegmentTimeseriesAggregateName);
+    public static TimedMetric querySegmentBitmapConstruction = MetricManager.getTimedMetric(CollectMetrics.querySegmentBitmapConstructionName);
+    public static TimedMetric querySegmentMakeCursor = MetricManager.getTimedMetric(CollectMetrics.querySegmentMakeCursorName);
+    public static TimedMetric queryIncrementalMakeCursor = MetricManager.getTimedMetric(CollectMetrics.queryIncrementalMakeCursorName);
+    public static TimedMetric queryLoadSegmentInMemory = MetricManager.getTimedMetric(CollectMetrics.queryLoadSegmentInMemoryName);
+    public static TimedMetric queryLoadSegmentOnDisk = MetricManager.getTimedMetric(CollectMetrics.queryLoadSegmentOnDiskName);
+    public static TimedMetric queryLoadBitmapOffHeap = MetricManager.getTimedMetric(CollectMetrics.queryLoadBitmapOffHeapName);
+    public static TimedMetric queryLoadBitmapOthers = MetricManager.getTimedMetric(CollectMetrics.queryLoadBitmapOthersName);
+    public static CounterMetric cacheHitHistorical = MetricManager.getCounterMetric(CollectMetrics.cacheHitHistoricalName);
+    public static CounterMetric cacheNotHitHistorical = MetricManager.getCounterMetric(CollectMetrics.cacheNotHitHistoricalName);
 
 }
 

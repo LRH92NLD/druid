@@ -60,9 +60,7 @@ import io.druid.server.security.AuthConfig;
 import io.druid.server.security.AuthorizationInfo;
 import io.druid.server.security.Resource;
 import io.druid.server.security.ResourceType;
-import org.avaje.metric.MetricManager;
 import org.avaje.metric.TimedEvent;
-import org.avaje.metric.TimedMetric;
 import org.joda.time.DateTime;
 
 import javax.servlet.http.HttpServletRequest;
@@ -190,8 +188,7 @@ public class QueryResource implements QueryCountStatsProvider
   ) throws IOException
   {
     // query/time metric start
-    TimedMetric queryTime = MetricManager.getTimedMetric(CollectMetrics.queryTimeName);
-    TimedEvent eventQueryTime = queryTime.startEvent();
+    TimedEvent eventQueryTime = CollectMetrics.queryTime.startEvent();
     // Both startMs and startNs are needed: startMs is absolute time and startNs is high-resolution.
     final long startMs = System.currentTimeMillis();
     final long startNs = System.nanoTime();
@@ -250,8 +247,7 @@ public class QueryResource implements QueryCountStatsProvider
         );
       }
       //test for sequence create time  queryTimeSequenceName
-      TimedMetric queryTimeSequence = MetricManager.getTimedMetric(CollectMetrics.queryTimeSequenceName);
-      TimedEvent eventQueryTimeSequence = queryTimeSequence.startEvent();
+      TimedEvent eventQueryTimeSequence = CollectMetrics.queryTimeSequence.startEvent();
 
       final Sequence res = QueryPlus.wrap(query).run(texasRanger, responseContext);
       //metric end
@@ -268,8 +264,7 @@ public class QueryResource implements QueryCountStatsProvider
         results = res;
       }
       //test for yielder create time queryTimeToYielderName
-      TimedMetric queryTimeToYielder = MetricManager.getTimedMetric(CollectMetrics.queryTimeToYielderName);
-      TimedEvent eventQueryTimeToYielder = queryTimeToYielder.startEvent();
+      TimedEvent eventQueryTimeToYielder = CollectMetrics.queryTimeToYielder.startEvent();
 
       final Yielder yielder = Yielders.each(results);
       //metric end

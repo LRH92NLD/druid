@@ -20,6 +20,7 @@
 package io.druid.segment;
 
 import com.google.common.base.Strings;
+import io.druid.CollectMetrics;
 import io.druid.collections.bitmap.BitmapFactory;
 import io.druid.collections.bitmap.ImmutableBitmap;
 import io.druid.collections.spatial.ImmutableRTree;
@@ -34,6 +35,7 @@ import io.druid.segment.column.ValueType;
 import io.druid.segment.data.Indexed;
 import io.druid.segment.data.IndexedIterable;
 import io.druid.segment.filter.Filters;
+import org.avaje.metric.TimedEvent;
 
 import java.util.Iterator;
 
@@ -212,7 +214,11 @@ public class ColumnSelectorBitmapIndexSelector implements BitmapIndexSelector
     }
 
     final BitmapIndex bitmapIndex = column.getBitmapIndex();
-    return bitmapIndex.getBitmap(bitmapIndex.getIndex(value));
+    //metric for queryLoadBitmapOthers
+    TimedEvent eventQueryLoadBitmapOthers = CollectMetrics.queryLoadBitmapOthers.startEvent();
+    ImmutableBitmap result = bitmapIndex.getBitmap(bitmapIndex.getIndex(value));
+    eventQueryLoadBitmapOthers.endWithSuccess();
+    return result;
   }
 
   @Override

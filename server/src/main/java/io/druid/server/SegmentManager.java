@@ -33,9 +33,7 @@ import io.druid.timeline.DataSegment;
 import io.druid.timeline.VersionedIntervalTimeline;
 import io.druid.timeline.partition.PartitionChunk;
 import io.druid.timeline.partition.PartitionHolder;
-import org.avaje.metric.MetricManager;
 import org.avaje.metric.TimedEvent;
-import org.avaje.metric.TimedMetric;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -159,9 +157,9 @@ public class SegmentManager
    */
   public boolean loadSegment(final DataSegment segment) throws SegmentLoadingException
   {
+    log.warn("loadSegment is called!" + System.nanoTime());
     //metric for load Segment from hdfs
-    TimedMetric queryLoadSegmentOnDisk = MetricManager.getTimedMetric(CollectMetrics.queryLoadSegmentOnDiskName);
-    TimedEvent eventQueryLoadSegmentOnDisk = queryLoadSegmentOnDisk.startEvent();
+    TimedEvent eventQueryLoadSegmentOnDisk = CollectMetrics.queryLoadSegmentOnDisk.startEvent();
 
     final Segment adapter = getAdapter(segment);
     //metric end

@@ -27,9 +27,7 @@ import io.druid.java.util.common.guava.Yielder;
 import io.druid.java.util.common.guava.Yielders;
 import io.druid.java.util.common.guava.YieldingAccumulator;
 import io.druid.java.util.common.guava.nary.BinaryFn;
-import org.avaje.metric.MetricManager;
 import org.avaje.metric.TimedEvent;
-import org.avaje.metric.TimedMetric;
 
 import java.io.IOException;
 
@@ -77,8 +75,7 @@ public class CombiningSequence<T> implements Sequence<T>
   public <OutType> Yielder<OutType> toYielder(OutType initValue, final YieldingAccumulator<OutType, T> accumulator)
   {
     //metric for node mergeresults
-    TimedMetric queryNodeMergeResults = MetricManager.getTimedMetric(CollectMetrics.queryNodeMergeResultsName);
-    TimedEvent eventQueryNodeMergeResults = queryNodeMergeResults.startEvent();
+    TimedEvent eventQueryNodeMergeResults = CollectMetrics.queryNodeMergeResults.startEvent();
 
     final CombiningYieldingAccumulator<OutType, T> combiningAccumulator = new CombiningYieldingAccumulator<>(
         ordering, mergeFn, accumulator
