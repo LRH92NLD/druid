@@ -22,6 +22,7 @@ package io.druid.query.topn;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
+import io.druid.CollectMetrics;
 import io.druid.collections.NonBlockingPool;
 import io.druid.java.util.common.granularity.Granularity;
 import io.druid.java.util.common.guava.Sequence;
@@ -39,6 +40,7 @@ import io.druid.segment.column.Column;
 import io.druid.segment.column.ColumnCapabilities;
 import io.druid.segment.column.ValueType;
 import io.druid.segment.filter.Filters;
+import org.avaje.metric.TimedEvent;
 import org.joda.time.Interval;
 
 import javax.annotation.Nullable;
@@ -98,7 +100,12 @@ public class TopNQueryEngine
                 if (queryMetrics != null) {
                   queryMetrics.cursor(input);
                 }
-                return mapFn.apply(input, queryMetrics);
+                //metric for querySegmentTopNAggregate
+                TimedEvent eventQuerySegmentTopNAggregate = CollectMetrics.querySegmentTopNAggregate.startEvent();
+
+                Result<TopNResultValue> result = mapFn.apply(input, queryMetrics);
+                eventQuerySegmentTopNAggregate.endWithSuccess();
+                return result;
               }
             }
         ),

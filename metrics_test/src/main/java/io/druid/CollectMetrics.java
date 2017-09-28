@@ -66,6 +66,9 @@ public class CollectMetrics {
 
     //time for io
     public static final String querySegmentTimeseriesAggregateName = "metrics.collect.test.TimeseriesAggregateOnSingleSegment";
+    public static final String querySegmentTopNAggregateName = "metrics.collect.test.TopNAggregateOnSingleSegment";//include aggregate and sort
+    public static final String querySegmentGroupByAggregateName = "metrics.collect.test.GroupByAggregateOnSingleSegment";//include scan and aggregate
+    public static final String subqueryNodeGroupByAggregateName = "metrics.collect.test.GroupBySubqueryOnNode";//include aggregate and sort
     public static final String querySegmentBitmapConstructionName = "metrics.collect.test.BitmapConstructionOnSegment";//prefilters not null construct bitmap
     public static final String querySegmentMakeCursorName = "metrics.collect.test.SegmentMakeCursor";//queryableindex cursor create after postfilters
     public static final String queryIncrementalMakeCursorName = "metrics.collect.test.IncrementalMakeCursor";//realtime cursor create
@@ -93,6 +96,9 @@ public class CollectMetrics {
     public static TimedMetric querySegmentTime = MetricManager.getTimedMetric(CollectMetrics.querySegmentTimeName);
     public static TimedMetric queryNodeMergeResults = MetricManager.getTimedMetric(CollectMetrics.queryNodeMergeResultsName);
     public static TimedMetric querySegmentTimeseriesAggregate = MetricManager.getTimedMetric(CollectMetrics.querySegmentTimeseriesAggregateName);
+    public static TimedMetric querySegmentGroupByAggregate = MetricManager.getTimedMetric(CollectMetrics.querySegmentGroupByAggregateName);
+    public static TimedMetric subqueryNodeGroupByAggregate = MetricManager.getTimedMetric(CollectMetrics.subqueryNodeGroupByAggregateName);
+    public static TimedMetric querySegmentTopNAggregate = MetricManager.getTimedMetric(CollectMetrics.querySegmentTopNAggregateName);
     public static TimedMetric querySegmentBitmapConstruction = MetricManager.getTimedMetric(CollectMetrics.querySegmentBitmapConstructionName);
     public static TimedMetric querySegmentMakeCursor = MetricManager.getTimedMetric(CollectMetrics.querySegmentMakeCursorName);
     public static TimedMetric queryIncrementalMakeCursor = MetricManager.getTimedMetric(CollectMetrics.queryIncrementalMakeCursorName);

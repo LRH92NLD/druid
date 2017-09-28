@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
+import io.druid.CollectMetrics;
 import io.druid.collections.ResourceHolder;
 import io.druid.common.guava.SettableSupplier;
 import io.druid.data.input.Row;
@@ -45,6 +46,7 @@ import io.druid.query.groupby.resource.GroupByQueryResource;
 import io.druid.segment.column.ValueType;
 import io.druid.segment.filter.BooleanValueMatcher;
 import io.druid.segment.filter.Filters;
+import org.avaje.metric.TimedEvent;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
@@ -163,7 +165,12 @@ public class GroupByRowProcessor
               final Accumulator<AggregateResult, Row> accumulator = pair.rhs;
               closeOnExit.add(grouper);
 
+              //metric subqueryNodeGroupByAggregate
+              TimedEvent eventSubqueryNodeGroupByAggregate = CollectMetrics.subqueryNodeGroupByAggregate.startEvent();
+
               final AggregateResult retVal = filteredSequence.accumulate(AggregateResult.ok(), accumulator);
+              eventSubqueryNodeGroupByAggregate.endWithSuccess();
+
               if (!retVal.isOk()) {
                 throw new ResourceLimitExceededException(retVal.getReason());
               }
