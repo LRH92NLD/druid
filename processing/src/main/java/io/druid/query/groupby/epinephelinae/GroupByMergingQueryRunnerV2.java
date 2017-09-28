@@ -32,6 +32,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.druid.CollectMetrics;
 import io.druid.collections.BlockingPool;
 import io.druid.collections.ReferenceCountingResourceHolder;
 import io.druid.collections.Releaser;
@@ -55,6 +56,7 @@ import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.groupby.GroupByQuery;
 import io.druid.query.groupby.GroupByQueryConfig;
 import io.druid.query.groupby.epinephelinae.RowBasedGrouperHelper.RowBasedKey;
+import org.avaje.metric.TimedEvent;
 
 import java.io.Closeable;
 import java.io.File;
@@ -228,11 +230,15 @@ public class GroupByMergingQueryRunnerV2 implements QueryRunner<Row>
                                           Releaser bufferReleaser = mergeBufferHolder.increment();
                                           Releaser grouperReleaser = grouperHolder.increment()
                                       ) {
+                                        //metric querySegmentGroupByAggregate
+                                        TimedEvent eventQuerySegmentGroupByAggregate = CollectMetrics.querySegmentGroupByAggregate.startEvent();
+
                                         final AggregateResult retVal = input.run(queryPlusForRunners, responseContext)
                                                                             .accumulate(
                                                                                 AggregateResult.ok(),
                                                                                 accumulator
                                                                             );
+                                        eventQuerySegmentGroupByAggregate.endWithSuccess();
 
                                         // Return true if OK, false if resources were exhausted.
                                         return retVal;
