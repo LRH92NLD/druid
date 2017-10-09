@@ -23,6 +23,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import io.druid.CollectMetrics;
 import io.druid.collections.bitmap.BitmapFactory;
 import io.druid.collections.bitmap.ImmutableBitmap;
 import io.druid.collections.bitmap.MutableBitmap;
@@ -43,6 +44,7 @@ import io.druid.segment.column.Column;
 import io.druid.segment.column.ColumnCapabilities;
 import io.druid.segment.column.GenericColumn;
 import it.unimi.dsi.fastutil.objects.Object2IntRBTreeMap;
+import org.avaje.metric.TimedEvent;
 import org.joda.time.Interval;
 
 import java.util.Arrays;
@@ -237,6 +239,9 @@ public class UseIndexesStrategy extends SearchStrategy
     @Override
     public Object2IntRBTreeMap<SearchHit> execute(int limit)
     {
+      //metric for querySegmentSearchIndexExecutor
+      TimedEvent eventQuerySegmentSearchIndexExecutor = CollectMetrics.querySegmentSearchIndexExecutor.startEvent();
+
       final QueryableIndex index = segment.asQueryableIndex();
       Preconditions.checkArgument(index != null, "Index should not be null");
 
@@ -278,6 +283,7 @@ public class UseIndexesStrategy extends SearchStrategy
         }
       }
 
+      eventQuerySegmentSearchIndexExecutor.endWithSuccess();
       return retVal;
     }
   }

@@ -26,6 +26,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
+import io.druid.CollectMetrics;
 import io.druid.java.util.common.IAE;
 import io.druid.java.util.common.ISE;
 import io.druid.java.util.common.guava.Sequence;
@@ -52,9 +53,11 @@ import io.druid.segment.column.ValueType;
 import io.druid.segment.data.IndexedInts;
 import io.druid.segment.filter.Filters;
 import io.druid.timeline.DataSegmentUtils;
+import org.avaje.metric.TimedEvent;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -216,6 +219,9 @@ public class SelectQueryEngine
           @Override
           public Result<SelectResultValue> apply(Cursor cursor)
           {
+            //metric for querySegmentSelectCompute
+            TimedEvent eventQuerySegmentSelectCompute = CollectMetrics.querySegmentSelectCompute.startEvent();
+
             final SelectResultValueBuilder builder = new SelectResultValueBuilder(
                 cursor.getTime(),
                 query.getPagingSpec(),
@@ -266,6 +272,8 @@ public class SelectQueryEngine
             }
 
             builder.finished(segmentId, lastOffset);
+            //metric end
+            eventQuerySegmentSelectCompute.endWithSuccess();
 
             return builder.build();
           }

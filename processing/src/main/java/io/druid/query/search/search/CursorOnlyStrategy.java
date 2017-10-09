@@ -20,6 +20,7 @@
 package io.druid.query.search.search;
 
 import com.google.common.collect.ImmutableList;
+import io.druid.CollectMetrics;
 import io.druid.java.util.common.guava.Accumulator;
 import io.druid.java.util.common.guava.Sequence;
 import io.druid.query.ColumnSelectorPlus;
@@ -33,6 +34,7 @@ import io.druid.segment.Segment;
 import io.druid.segment.StorageAdapter;
 import io.druid.segment.VirtualColumns;
 import it.unimi.dsi.fastutil.objects.Object2IntRBTreeMap;
+import org.avaje.metric.TimedEvent;
 import org.joda.time.Interval;
 
 import java.util.Arrays;
@@ -88,6 +90,9 @@ public class CursorOnlyStrategy extends SearchStrategy
     @Override
     public Object2IntRBTreeMap<SearchHit> execute(final int limit)
     {
+      //metric for querySegmentSearchCursorExecutor
+      TimedEvent eventQuerySegmentSearchCursorExecutor = CollectMetrics.querySegmentSearchCursorExecutor.startEvent();
+
       final StorageAdapter adapter = segment.asStorageAdapter();
 
       final Sequence<Cursor> cursors = adapter.makeCursors(
@@ -144,6 +149,7 @@ public class CursorOnlyStrategy extends SearchStrategy
           }
       );
 
+      eventQuerySegmentSearchCursorExecutor.endWithSuccess();
       return retVal;
     }
   }
