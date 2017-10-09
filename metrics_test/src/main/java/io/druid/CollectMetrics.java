@@ -64,11 +64,17 @@ public class CollectMetrics {
     public static final String querySegmentTimeName = "metrics.collect.test.SingleSegmentQueryTime";
     public static final String queryNodeMergeResultsName = "metrics.collect.test.MergeResultsOnSingleNode"; //all query type call this method
 
-    //time for io
+    //time for scan and compute
     public static final String querySegmentTimeseriesAggregateName = "metrics.collect.test.TimeseriesAggregateOnSingleSegment";
     public static final String querySegmentTopNAggregateName = "metrics.collect.test.TopNAggregateOnSingleSegment";//include aggregate and sort
     public static final String querySegmentGroupByAggregateName = "metrics.collect.test.GroupByAggregateOnSingleSegment";//include scan and aggregate
     public static final String subqueryNodeGroupByAggregateName = "metrics.collect.test.GroupBySubqueryOnNode";//include aggregate and sort
+    public static final String querySegmentSearchComputeName = "metrics.collect.test.SearchComputeOnSingleSegment";//include scan and compute
+    public static final String querySegmentSearchCursorExecutorName = "metrics.collect.test.SearchExecuteBaseCursor";//unsupport index dimensions include make cursor
+    public static final String querySegmentSearchIndexExecutorName = "metrics.collect.test.SearchExecuteBaseIndex";//support index dimensions
+    public static final String querySegmentSelectComputeName = "metrics.collect.test.SelectComputeOnSingleSegment";//scan and compute
+
+    //time for io
     public static final String querySegmentBitmapConstructionName = "metrics.collect.test.BitmapConstructionOnSegment";//prefilters not null construct bitmap
     public static final String querySegmentMakeCursorName = "metrics.collect.test.SegmentMakeCursor";//queryableindex cursor create after postfilters
     public static final String queryIncrementalMakeCursorName = "metrics.collect.test.IncrementalMakeCursor";//realtime cursor create
@@ -98,7 +104,11 @@ public class CollectMetrics {
     public static TimedMetric querySegmentTimeseriesAggregate = MetricManager.getTimedMetric(CollectMetrics.querySegmentTimeseriesAggregateName);
     public static TimedMetric querySegmentGroupByAggregate = MetricManager.getTimedMetric(CollectMetrics.querySegmentGroupByAggregateName);
     public static TimedMetric subqueryNodeGroupByAggregate = MetricManager.getTimedMetric(CollectMetrics.subqueryNodeGroupByAggregateName);
+    public static TimedMetric querySegmentSearchCompute = MetricManager.getTimedMetric(CollectMetrics.querySegmentSearchComputeName);
+    public static TimedMetric querySegmentSearchCursorExecutor = MetricManager.getTimedMetric(CollectMetrics.querySegmentSearchCursorExecutorName);
+    public static TimedMetric querySegmentSearchIndexExecutor = MetricManager.getTimedMetric(CollectMetrics.querySegmentSearchIndexExecutorName);
     public static TimedMetric querySegmentTopNAggregate = MetricManager.getTimedMetric(CollectMetrics.querySegmentTopNAggregateName);
+    public static TimedMetric querySegmentSelectCompute = MetricManager.getTimedMetric(CollectMetrics.querySegmentSelectComputeName);
     public static TimedMetric querySegmentBitmapConstruction = MetricManager.getTimedMetric(CollectMetrics.querySegmentBitmapConstructionName);
     public static TimedMetric querySegmentMakeCursor = MetricManager.getTimedMetric(CollectMetrics.querySegmentMakeCursorName);
     public static TimedMetric queryIncrementalMakeCursor = MetricManager.getTimedMetric(CollectMetrics.queryIncrementalMakeCursorName);

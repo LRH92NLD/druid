@@ -24,6 +24,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import io.druid.CollectMetrics;
 import io.druid.java.util.common.IAE;
 import io.druid.java.util.common.ISE;
 import io.druid.java.util.common.guava.FunctionalIterable;
@@ -50,6 +51,7 @@ import io.druid.segment.column.ValueType;
 import io.druid.segment.data.IndexedInts;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntRBTreeMap;
+import org.avaje.metric.TimedEvent;
 
 import java.util.List;
 import java.util.Map;
@@ -202,10 +204,15 @@ public class SearchQueryRunner implements QueryRunner<Result<SearchResultValue>>
     retVal.defaultReturnValue(0);
 
     int remain = query.getLimit();
+
+    //metric for querySegmentSearchCompute
+    TimedEvent eventQuerySegmentSearchCompute = CollectMetrics.querySegmentSearchCompute.startEvent();
+
     for (final SearchQueryExecutor executor : plan) {
       retVal.putAll(executor.execute(remain));
       remain -= retVal.size();
     }
+    eventQuerySegmentSearchCompute.endWithSuccess();
 
     return makeReturnResult(segment, query.getLimit(), retVal);
   }
