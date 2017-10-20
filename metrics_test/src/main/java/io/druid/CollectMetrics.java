@@ -43,7 +43,7 @@ public class CollectMetrics {
                                 EnnMetricsConfig.getConfigWithFreq(1, "metricsTest")),
                         new OpentsdbHttpReporterModule(
                                 OpentsdbConfig.newBuilder()
-                                        .setHostname("localhost")
+                                        .setHostname("http://monitoring-opentsdb.monitor-essential-service")
                                         .setPort(4242)
                                         .build()));
 
