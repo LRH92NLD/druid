@@ -21,6 +21,7 @@ package io.druid.segment.loading;
 
 import com.google.common.base.Joiner;
 import io.druid.timeline.DataSegment;
+import org.joda.time.format.ISODateTimeFormat;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,10 +41,10 @@ public interface DataSegmentPusher
   //use map instead of LoadSpec class to avoid dependency pollution.
   Map<String, Object> makeLoadSpec(URI finalIndexZipFilePath);
   default String getStorageDir(DataSegment dataSegment) {
-    return getDefaultStorageDir(dataSegment).replaceAll(":","jesse");
+    return getDefaultStorageDir(dataSegment);
   }
   default String makeIndexPathName(DataSegment dataSegment, String indexName) {
-    return String.format("./%s/%s", getStorageDir(dataSegment),indexName).replaceAll(":","jesse");
+    return String.format("./%s/%s", getStorageDir(dataSegment),indexName);
   }
 
   /**
@@ -64,11 +65,11 @@ public interface DataSegmentPusher
         segment.getDataSource(),
         String.format(
             "%s_%s",
-            segment.getInterval().getStart(),
-            segment.getInterval().getEnd()
+            segment.getInterval().getStart().toString(ISODateTimeFormat.basicDateTime()),
+            segment.getInterval().getEnd().toString(ISODateTimeFormat.basicDateTime())
         ),
-        segment.getVersion(),
+        segment.getVersion().replaceAll(":","_"),
         segment.getShardSpec().getPartitionNum()
-    ).replaceAll(":","jesse");
+    );
   }
 }
