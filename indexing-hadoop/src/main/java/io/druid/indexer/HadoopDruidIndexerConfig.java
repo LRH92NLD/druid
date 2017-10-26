@@ -37,6 +37,7 @@ import com.google.inject.Binder;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.TypeLiteral;
 import io.druid.common.utils.JodaUtils;
 import io.druid.data.input.InputRow;
 import io.druid.data.input.impl.InputRowParser;
@@ -74,8 +75,10 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -101,29 +104,40 @@ public class HadoopDruidIndexerConfig
 
 
   static {
-    injector = Initialization.makeInjectorWithModules(
-        GuiceInjectors.makeStartupInjector(),
-        ImmutableList.<Module>of(
-            new Module()
-            {
+    injector =
+      Initialization.makeInjectorWithModules(
+        Initialization.makeInjectorWithModules(
+          GuiceInjectors.makeStartupInjector(),
+          ImmutableList.<Module>of(
+            new Module() {
               @Override
-              public void configure(Binder binder)
-              {
+              public void configure(Binder binder) {
                 JsonConfigProvider.bindInstance(
-                    binder, Key.get(DruidNode.class, Self.class), new DruidNode("hadoop-indexer", null, null)
-                );
-                JsonConfigProvider.bind(binder, "druid.hadoop.security.kerberos", HadoopKerberosConfig.class);
+                  binder,
+                  Key.get(DruidNode.class, Self.class),
+                  new DruidNode("hadoop-indexer", null, null));
+                JsonConfigProvider.bind(
+                  binder, "druid.hadoop.security.kerberos", HadoopKerberosConfig.class);
               }
             },
-            new IndexingHadoopModule()
-        )
-    );
+            new IndexingHadoopModule())),
+        Collections.EMPTY_LIST);
     JSON_MAPPER = injector.getInstance(ObjectMapper.class);
     INDEX_IO = injector.getInstance(IndexIO.class);
     INDEX_MERGER = injector.getInstance(IndexMerger.class);
     INDEX_MERGER_V9 = injector.getInstance(IndexMergerV9.class);
     HADOOP_KERBEROS_CONFIG = injector.getInstance(HadoopKerberosConfig.class);
-    DATA_SEGMENT_PUSHER = injector.getInstance(DataSegmentPusher.class);
+    String storageType =
+      injector.getInstance(Properties.class).getProperty("druid.storage.type", "local");
+    Map<String, DataSegmentPusher> pusherMap =
+      injector.getInstance(Key.get(new TypeLiteral<Map<String, DataSegmentPusher>>() {}));
+    if (pusherMap.containsKey(storageType)) {
+      DATA_SEGMENT_PUSHER = pusherMap.get(storageType);
+    } else {
+      DATA_SEGMENT_PUSHER = injector.getInstance(DataSegmentPusher.class);
+    }
+
+    log.warn("JESSE_LOG pusher type is: " + DATA_SEGMENT_PUSHER.getClass().getCanonicalName());
   }
 
   public static enum IndexJobCounters
