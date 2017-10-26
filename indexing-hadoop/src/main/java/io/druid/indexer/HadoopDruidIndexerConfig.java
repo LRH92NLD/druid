@@ -105,7 +105,6 @@ public class HadoopDruidIndexerConfig
 
   static {
     injector =
-      Initialization.makeInjectorWithModules(
         Initialization.makeInjectorWithModules(
           GuiceInjectors.makeStartupInjector(),
           ImmutableList.<Module>of(
@@ -120,8 +119,7 @@ public class HadoopDruidIndexerConfig
                   binder, "druid.hadoop.security.kerberos", HadoopKerberosConfig.class);
               }
             },
-            new IndexingHadoopModule())),
-        Collections.EMPTY_LIST);
+            new IndexingHadoopModule()));
     JSON_MAPPER = injector.getInstance(ObjectMapper.class);
     INDEX_IO = injector.getInstance(IndexIO.class);
     INDEX_MERGER = injector.getInstance(IndexMerger.class);
