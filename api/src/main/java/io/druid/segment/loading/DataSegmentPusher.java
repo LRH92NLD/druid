@@ -40,10 +40,10 @@ public interface DataSegmentPusher
   //use map instead of LoadSpec class to avoid dependency pollution.
   Map<String, Object> makeLoadSpec(URI finalIndexZipFilePath);
   default String getStorageDir(DataSegment dataSegment) {
-    return getDefaultStorageDir(dataSegment);
+    return getDefaultStorageDir(dataSegment).replaceAll(":","jesse");
   }
   default String makeIndexPathName(DataSegment dataSegment, String indexName) {
-    return String.format("./%s/%s", getStorageDir(dataSegment),indexName);
+    return String.format("./%s/%s", getStorageDir(dataSegment),indexName).replaceAll(":","jesse");
   }
 
   /**
@@ -69,6 +69,6 @@ public interface DataSegmentPusher
         ),
         segment.getVersion(),
         segment.getShardSpec().getPartitionNum()
-    );
+    ).replaceAll(":","jesse");
   }
 }
