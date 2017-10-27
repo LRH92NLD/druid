@@ -408,6 +408,8 @@ public class JobHelper
       throws IOException
   {
     final FileSystem outputFS = FileSystem.get(finalIndexZipFilePath.toUri(), configuration);
+    log.warn("lrh: serializeOutIndex outputFS:" + outputFS.toString());
+
     final AtomicLong size = new AtomicLong(0L);
     final DataPusher zipPusher = (DataPusher) RetryProxy.create(
         DataPusher.class, new DataPusher()
@@ -436,6 +438,10 @@ public class JobHelper
     log.info("Zipped %,d bytes to [%s]", size.get(), tmpPath.toUri());
 
     final URI indexOutURI = finalIndexZipFilePath.toUri();
+    log.warn("lrh: serializeOutIndex indexOutURI:" + indexOutURI.toString());
+    log.warn("lrh: serializeOutIndex dataSegmentPusher:" + dataSegmentPusher.getClass().getCanonicalName());
+    log.warn("lrh: serializeOutIndex makeLoadSpec:" + dataSegmentPusher.makeLoadSpec(indexOutURI).toString());
+
     final DataSegment finalSegment = segmentTemplate
         .withLoadSpec(dataSegmentPusher.makeLoadSpec(indexOutURI))
         .withSize(size.get())
@@ -457,6 +463,8 @@ public class JobHelper
         finalDescriptorPath,
         progressable
     );
+    log.warn("lrh: serializeOutIndex finalSegment:" + finalSegment.toString());
+
     return finalSegment;
   }
 
