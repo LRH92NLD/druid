@@ -105,6 +105,7 @@ public class IndexGeneratorJob implements Jobby
     ImmutableList.Builder<DataSegment> publishedSegmentsBuilder = ImmutableList.builder();
 
     final Path descriptorInfoDir = config.makeDescriptorInfoDir();
+    log.warn("lrh: getPublishedSegments config:" + config.toString());
 
     try {
       FileSystem fs = descriptorInfoDir.getFileSystem(conf);
@@ -112,6 +113,8 @@ public class IndexGeneratorJob implements Jobby
       for (FileStatus status : fs.listStatus(descriptorInfoDir)) {
         final DataSegment segment = jsonMapper.readValue(fs.open(status.getPath()), DataSegment.class);
         publishedSegmentsBuilder.add(segment);
+
+        log.warn("lrh: getPublishedSegments segment loadSpec:" + segment.getLoadSpec().toString());
         log.info("Adding segment %s to the list of published segments", segment.getIdentifier());
       }
     }
