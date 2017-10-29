@@ -135,7 +135,7 @@ public class HadoopDruidIndexerConfig
       DATA_SEGMENT_PUSHER = injector.getInstance(DataSegmentPusher.class);
     }
 
-    log.warn("JESSE_LOG pusher type is: " + DATA_SEGMENT_PUSHER.getClass().getCanonicalName());
+    System.out.println("lrh:  HadoopDruidIndexerConfig dataSegmentPusher: " + DATA_SEGMENT_PUSHER.getClass().getCanonicalName());
   }
 
   public static enum IndexJobCounters
