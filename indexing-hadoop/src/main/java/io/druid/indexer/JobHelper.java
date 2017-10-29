@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.OutputSupplier;
@@ -446,6 +447,10 @@ public class JobHelper
         .withLoadSpec(dataSegmentPusher.makeLoadSpec(indexOutURI))
         .withSize(size.get())
         .withBinaryVersion(SegmentUtils.getVersionFromDir(mergedBase));
+
+    if(outputFS.getScheme().equals("hdfs")||outputFS.getScheme().equals("viewfs")||outputFS.getScheme().equals("maprfs")){
+        finalSegment.withLoadSpec(ImmutableMap.<String,Object>of("type","hdfs","path",indexOutURI.toString()));
+    }
 
     if (!renameIndexFiles(outputFS, tmpPath, finalIndexZipFilePath)) {
       throw new IOException(
