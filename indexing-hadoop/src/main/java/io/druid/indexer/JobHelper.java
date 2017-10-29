@@ -443,14 +443,21 @@ public class JobHelper
     System.out.println("lrh: serializeOutIndex dataSegmentPusher:" + dataSegmentPusher.getClass().getCanonicalName());
     System.out.println("lrh: serializeOutIndex makeLoadSpec:" + dataSegmentPusher.makeLoadSpec(indexOutURI).toString());
 
-    final DataSegment finalSegment = segmentTemplate
-        .withLoadSpec(dataSegmentPusher.makeLoadSpec(indexOutURI))
-        .withSize(size.get())
-        .withBinaryVersion(SegmentUtils.getVersionFromDir(mergedBase));
+    final DataSegment finalSegment;
 
     if(outputFS.getScheme().equals("hdfs")||outputFS.getScheme().equals("viewfs")||outputFS.getScheme().equals("maprfs")){
-        finalSegment.withLoadSpec(ImmutableMap.<String,Object>of("type","hdfs","path",indexOutURI.toString()));
+
+      finalSegment = segmentTemplate
+              .withLoadSpec(ImmutableMap.<String,Object>of("type","hdfs","path",indexOutURI.toString()))
+              .withSize(size.get())
+              .withBinaryVersion(SegmentUtils.getVersionFromDir(mergedBase));
+    }else{
+       finalSegment = segmentTemplate
+              .withLoadSpec(dataSegmentPusher.makeLoadSpec(indexOutURI))
+              .withSize(size.get())
+              .withBinaryVersion(SegmentUtils.getVersionFromDir(mergedBase));
     }
+
 
     if (!renameIndexFiles(outputFS, tmpPath, finalIndexZipFilePath)) {
       throw new IOException(
