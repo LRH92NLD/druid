@@ -124,7 +124,20 @@ public class HadoopDruidIndexerConfig
     INDEX_MERGER = injector.getInstance(IndexMerger.class);
     INDEX_MERGER_V9 = injector.getInstance(IndexMergerV9.class);
     HADOOP_KERBEROS_CONFIG = injector.getInstance(HadoopKerberosConfig.class);
-    DATA_SEGMENT_PUSHER = injector.getInstance(DataSegmentPusher.class);
+    String storageType =
+            injector.getInstance(Properties.class).getProperty("druid.storage.type", "local");
+    Map<String, DataSegmentPusher> pusherMap =
+            injector.getInstance(Key.get(new TypeLiteral<Map<String, DataSegmentPusher>>() {}));
+    if (pusherMap.containsKey(storageType)) {
+      DATA_SEGMENT_PUSHER = pusherMap.get(storageType);
+    } else {
+      DATA_SEGMENT_PUSHER = injector.getInstance(DataSegmentPusher.class);
+    }
+    System.out.println("lrh============start");
+    pusherMap.keySet().forEach(s-> System.out.println(s));
+    System.out.println("Storage type is: " + storageType);
+    System.out.println(DATA_SEGMENT_PUSHER.getClass().getCanonicalName());
+    System.out.println("lrh============end");
   }
 
   public static enum IndexJobCounters
