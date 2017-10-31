@@ -158,6 +158,7 @@ public class Initialization
 
     private void addAllFromCurrentClassLoader()
     {
+      System.out.println("lrh: searching current class loader....");
       ServiceLoader
           .load(serviceClass, Thread.currentThread().getContextClassLoader())
           .forEach(impl -> tryAdd(impl, "classpath"));
@@ -383,7 +384,9 @@ public class Initialization
 
     ModuleList extensionModules = new ModuleList(baseInjector);
     final ExtensionsConfig config = baseInjector.getInstance(ExtensionsConfig.class);
+    System.out.println("lrh :" + config.toString());
     for (DruidModule module : Initialization.getFromExtensions(config, DruidModule.class)) {
+      System.out.println("lrh load module: "+ module.getClass().getCanonicalName());
       extensionModules.addModule(module);
     }
 
