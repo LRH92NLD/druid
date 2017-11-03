@@ -48,7 +48,7 @@ public class Main
   @SuppressWarnings("unchecked")
   public static void main(String[] args)
   {
-    if(System.getProperty("ENABLE_OPENTSDB")!=null && System.getProperty("ENABLE_OPENTSDB").equals("true")){
+    if(System.getenv("ENABLE_OPENTSDB")!=null && System.getenv("ENABLE_OPENTSDB").equals("true")){
       if(args[0].equals("server")){
 
         try {

@@ -43,8 +43,8 @@ public class CollectMetrics {
                                 EnnMetricsConfig.getConfigWithFreq(1, "metricsTest")),
                         new OpentsdbHttpReporterModule(
                                 OpentsdbConfig.newBuilder()
-                                        .setHostname("10.19.138.167")
-                                        .setPort(4242)
+                                        .setHostname(System.getenv("OPENTSDB_HOSTNAME"))
+                                        .setPort(Integer.parseInt(System.getenv("OPENTSDB_PORT")))
                                         .build()));
 
         EnnMetricsThread metricsTread = injector.getInstance(EnnMetricsThread.class);
