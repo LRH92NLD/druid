@@ -219,11 +219,11 @@ public class IndexIO
     final IndexLoader loader = indexLoaders.get(version);
 
     if (loader != null) {
-      //metric queryLoadSegmentInMemory
-      TimedEvent eventQueryLoadSegmentInMemory = CollectMetrics.queryLoadSegmentInMemory.startEvent();
+      //metric queryLoadIndexOnDisk
+      TimedEvent eventQueryLoadIndexOnDisk = CollectMetrics.queryLoadIndexOnDisk.startEvent();
 
       QueryableIndex result = loader.load(inDir, mapper);
-      eventQueryLoadSegmentInMemory.endWithSuccess();
+      eventQueryLoadIndexOnDisk.endWithSuccess();
       return result;
     } else {
       throw new ISE("Unknown index version[%s]", version);
