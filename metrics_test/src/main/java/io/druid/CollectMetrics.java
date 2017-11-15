@@ -56,18 +56,18 @@ public class CollectMetrics {
     public static final String queryTimeName = "metrics.collect.test.QueryTime";
     public static final String queryTimeSequenceName = "metrics.collect.test.SequenceQueryTime";
     public static final String queryTimeToYielderName = "metrics.collect.test.ToYielderQueryTime";
-    public static final String queryFromCacheBrokerName = "metrics.collect.test.BrokerCacheQueryTime";
-    public static final String queryFromServerBrokerName = "metrics.collect.test.AllServersQueryTime";
-    public static final String queryFromSingleServerBrokerName = "metrics.collect.test.SingleServerQueryTime";
-    public static final String queryNodeTtfbName = "metrics.collect.test.QueryNodeTtfb";
-    public static final String queryNodeTimeName = "metrics.collect.test.QueryNodeTime";
+    public static final String queryFromCacheBrokerName = "metrics.collect.test.BrokerCacheQueryTime";//should delete
+    public static final String queryFromServerBrokerName = "metrics.collect.test.AllServersQueryTime";//should delete
+    public static final String queryFromSingleServerBrokerName = "metrics.collect.test.SingleServerQueryTime";//should delete
+    public static final String queryNodeTtfbName = "metrics.collect.test.QueryNodeTtfb";//post http request and wait first byte back
+    public static final String queryNodeTimeName = "metrics.collect.test.QueryNodeTime";//historical results transfer time
     public static final String querySegmentTimeName = "metrics.collect.test.SingleSegmentQueryTime";
     public static final String queryNodeMergeResultsName = "metrics.collect.test.MergeResultsOnSingleNode"; //all query type call this method
 
     //time for scan and compute
     public static final String querySegmentTimeseriesAggregateName = "metrics.collect.test.TimeseriesAggregateOnSingleSegment";
     public static final String querySegmentTopNAggregateName = "metrics.collect.test.TopNAggregateOnSingleSegment";//include aggregate and sort
-    public static final String querySegmentGroupByAggregateName = "metrics.collect.test.GroupByAggregateOnSingleSegment";//include scan and aggregate
+    public static final String querySegmentGroupByMergeName = "metrics.collect.test.GroupByMergeOnSingleSegment";//include get single segment result and merge to single server result
     public static final String subqueryNodeGroupByAggregateName = "metrics.collect.test.GroupBySubqueryOnNode";//include aggregate and sort
     public static final String querySegmentSearchComputeName = "metrics.collect.test.SearchComputeOnSingleSegment";//include scan and compute
     public static final String querySegmentSearchCursorExecutorName = "metrics.collect.test.SearchExecuteBaseCursor";//unsupport index dimensions include make cursor
@@ -78,7 +78,7 @@ public class CollectMetrics {
     public static final String querySegmentBitmapConstructionName = "metrics.collect.test.BitmapConstructionOnSegment";//prefilters not null construct bitmap
     public static final String querySegmentMakeCursorName = "metrics.collect.test.SegmentMakeCursor";//queryableindex cursor create after postfilters
     public static final String queryIncrementalMakeCursorName = "metrics.collect.test.IncrementalMakeCursor";//realtime cursor create
-    public static final String queryLoadSegmentInMemoryName = "metrics.collect.test.LoadSegmentInMemory";//queryableindex create for load segment
+    public static final String queryLoadIndexOnDiskName = "metrics.collect.test.LoadIndexOnDisk";//index files unzip for loading segment in disk
     public static final String queryLoadSegmentOnDiskName = "metrics.collect.test.LoadSegmentOnDisk";
     public static final String queryLoadBitmapOffHeapName = "metrics.collect.test.LoadBitmapOffheap";
     public static final String queryLoadBitmapOthersName = "metrics.collect.test.LoadBitmapOthers";
@@ -92,17 +92,17 @@ public class CollectMetrics {
     public static TimedMetric queryTime = MetricManager.getTimedMetric(CollectMetrics.queryTimeName);
     public static TimedMetric queryTimeSequence = MetricManager.getTimedMetric(CollectMetrics.queryTimeSequenceName);
     public static TimedMetric queryTimeToYielder = MetricManager.getTimedMetric(CollectMetrics.queryTimeToYielderName);
-    public static TimedMetric queryFromCacheBroker = MetricManager.getTimedMetric(CollectMetrics.queryFromCacheBrokerName);
-    public static TimedMetric queryFromServerBroker = MetricManager.getTimedMetric(CollectMetrics.queryFromServerBrokerName);
+    public static TimedMetric queryFromCacheBroker = MetricManager.getTimedMetric(CollectMetrics.queryFromCacheBrokerName);//should delete
+    public static TimedMetric queryFromServerBroker = MetricManager.getTimedMetric(CollectMetrics.queryFromServerBrokerName);//should delete
     public static ValueMetric cacheHitBroker = MetricManager.getValueMetric(CollectMetrics.cacheHitBrokerName);
     public static ValueMetric cacheNotHitBroker = MetricManager.getValueMetric(CollectMetrics.cacheNotHitBrokerName);
-    public static TimedMetric queryFromSingleServerBroker = MetricManager.getTimedMetric(CollectMetrics.queryFromSingleServerBrokerName);
+    public static TimedMetric queryFromSingleServerBroker = MetricManager.getTimedMetric(CollectMetrics.queryFromSingleServerBrokerName);//should delete
     public static TimedMetric queryNodeTtfb = MetricManager.getTimedMetric(CollectMetrics.queryNodeTtfbName);
     public static TimedMetric queryNodeTime = MetricManager.getTimedMetric(CollectMetrics.queryNodeTimeName);
     public static TimedMetric querySegmentTime = MetricManager.getTimedMetric(CollectMetrics.querySegmentTimeName);
     public static TimedMetric queryNodeMergeResults = MetricManager.getTimedMetric(CollectMetrics.queryNodeMergeResultsName);
     public static TimedMetric querySegmentTimeseriesAggregate = MetricManager.getTimedMetric(CollectMetrics.querySegmentTimeseriesAggregateName);
-    public static TimedMetric querySegmentGroupByAggregate = MetricManager.getTimedMetric(CollectMetrics.querySegmentGroupByAggregateName);
+    public static TimedMetric querySegmentGroupByMerge = MetricManager.getTimedMetric(CollectMetrics.querySegmentGroupByMergeName);
     public static TimedMetric subqueryNodeGroupByAggregate = MetricManager.getTimedMetric(CollectMetrics.subqueryNodeGroupByAggregateName);
     public static TimedMetric querySegmentSearchCompute = MetricManager.getTimedMetric(CollectMetrics.querySegmentSearchComputeName);
     public static TimedMetric querySegmentSearchCursorExecutor = MetricManager.getTimedMetric(CollectMetrics.querySegmentSearchCursorExecutorName);
@@ -112,7 +112,7 @@ public class CollectMetrics {
     public static TimedMetric querySegmentBitmapConstruction = MetricManager.getTimedMetric(CollectMetrics.querySegmentBitmapConstructionName);
     public static TimedMetric querySegmentMakeCursor = MetricManager.getTimedMetric(CollectMetrics.querySegmentMakeCursorName);
     public static TimedMetric queryIncrementalMakeCursor = MetricManager.getTimedMetric(CollectMetrics.queryIncrementalMakeCursorName);
-    public static TimedMetric queryLoadSegmentInMemory = MetricManager.getTimedMetric(CollectMetrics.queryLoadSegmentInMemoryName);
+    public static TimedMetric queryLoadIndexOnDisk = MetricManager.getTimedMetric(CollectMetrics.queryLoadIndexOnDiskName);
     public static TimedMetric queryLoadSegmentOnDisk = MetricManager.getTimedMetric(CollectMetrics.queryLoadSegmentOnDiskName);
     public static TimedMetric queryLoadBitmapOffHeap = MetricManager.getTimedMetric(CollectMetrics.queryLoadBitmapOffHeapName);
     public static TimedMetric queryLoadBitmapOthers = MetricManager.getTimedMetric(CollectMetrics.queryLoadBitmapOthersName);

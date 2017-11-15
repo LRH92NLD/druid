@@ -355,6 +355,12 @@ public class DirectDruidClient<T> implements QueryRunner<T>
           final long nodeTimeMs = TimeUnit.NANOSECONDS.toMillis(nodeTimeNs);
           //query/node/time end
           eventQueryNodeTime.endWithSuccess();
+          log.warn(
+                  "lrh: Completed query with %,d bytes returned in %,d millis [%,f b/s].",
+                  byteCount.get(),
+                  nodeTimeMs,
+                  byteCount.get() / (0.001 * nodeTimeMs) // Floating math; division by zero will yield Inf, not exception
+          );
 
           log.debug(
               "Completed queryId[%s] request to url[%s] with %,d bytes returned in %,d millis [%,f b/s].",

@@ -230,15 +230,15 @@ public class GroupByMergingQueryRunnerV2 implements QueryRunner<Row>
                                           Releaser bufferReleaser = mergeBufferHolder.increment();
                                           Releaser grouperReleaser = grouperHolder.increment()
                                       ) {
-                                        //metric querySegmentGroupByAggregate
-                                        TimedEvent eventQuerySegmentGroupByAggregate = CollectMetrics.querySegmentGroupByAggregate.startEvent();
+                                        //metric querySegmentGroupByMerge
+                                        TimedEvent eventQuerySegmentGroupByMerge = CollectMetrics.querySegmentGroupByMerge.startEvent();
 
                                         final AggregateResult retVal = input.run(queryPlusForRunners, responseContext)
                                                                             .accumulate(
                                                                                 AggregateResult.ok(),
                                                                                 accumulator
                                                                             );
-                                        eventQuerySegmentGroupByAggregate.endWithSuccess();
+                                        eventQuerySegmentGroupByMerge.endWithSuccess();
 
                                         // Return true if OK, false if resources were exhausted.
                                         return retVal;
