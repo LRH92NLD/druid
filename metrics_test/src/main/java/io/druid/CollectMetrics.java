@@ -36,6 +36,8 @@ import java.net.UnknownHostException;
 public class CollectMetrics {
     public static void startMetricsCollector()
             throws EnnException, UnknownHostException {
+        String hostname= System.getenv("OPENTSDB_HOSTNAME")==null?System.getProperty("OPENTSDB_HOSTNAME"):System.getenv("OPENTSDB_HOSTNAME");
+        String port= System.getenv("OPENTSDB_PORT")==null?System.getProperty("OPENTSDB_PORT"):System.getenv("OPENTSDB_PORT");
 
         Injector injector =
                 Guice.createInjector(
@@ -43,8 +45,8 @@ public class CollectMetrics {
                                 EnnMetricsConfig.getConfigWithFreq(1, "metricsTest")),
                         new OpentsdbHttpReporterModule(
                                 OpentsdbConfig.newBuilder()
-                                        .setHostname(System.getenv("OPENTSDB_HOSTNAME"))
-                                        .setPort(Integer.parseInt(System.getenv("OPENTSDB_PORT")))
+                                        .setHostname(hostname)
+                                        .setPort(Integer.parseInt(port))
                                         .build()));
 
         EnnMetricsThread metricsTread = injector.getInstance(EnnMetricsThread.class);
