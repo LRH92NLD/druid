@@ -89,6 +89,11 @@ public class CollectMetrics {
     public static final String cacheHitHistoricalName = "metrics.collect.test.CacheHitHistorical";
     public static final String cacheNotHitHistoricalName = "metrics.collect.test.CacheNotHitHistorical";
 
+    //time for consumer
+    public static final String consumerPollSizeName = "metrics.collect.test.ConsumerPollSize";
+    public static final String consumerAllRecordTimeName = "metrics.collect.test.ConsumerAllRecordTime";
+    public static final String consumerOneRecordTimeName = "metrics.collect.test.ConsumerOneRecordTime";
+
     public static TimedMetric queryTime = MetricManager.getTimedMetric(CollectMetrics.queryTimeName);
     public static TimedMetric queryTimeSequence = MetricManager.getTimedMetric(CollectMetrics.queryTimeSequenceName);
     public static TimedMetric queryTimeToYielder = MetricManager.getTimedMetric(CollectMetrics.queryTimeToYielderName);
@@ -118,6 +123,9 @@ public class CollectMetrics {
     public static TimedMetric queryLoadBitmapOthers = MetricManager.getTimedMetric(CollectMetrics.queryLoadBitmapOthersName);
     public static CounterMetric cacheHitHistorical = MetricManager.getCounterMetric(CollectMetrics.cacheHitHistoricalName);
     public static CounterMetric cacheNotHitHistorical = MetricManager.getCounterMetric(CollectMetrics.cacheNotHitHistoricalName);
+    public static CounterMetric consumerPollSize = MetricManager.getCounterMetric(CollectMetrics.consumerPollSizeName);
+    public static TimedMetric consumerAllRecordTime = MetricManager.getTimedMetric(CollectMetrics.consumerAllRecordTimeName);
+    public static TimedMetric consumerOneRecordTime = MetricManager.getTimedMetric(CollectMetrics.consumerOneRecordTimeName);
 
 }
 
