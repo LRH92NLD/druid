@@ -171,7 +171,7 @@ public class JettyServerModule extends JerseyServletModule
 
     ServerConnector connector;
     if(System.getProperty("test.acceptors")!=null && System.getProperty("test.selectors")!=null){
-      connector = new ServerConnector(server,Integer.parseInt(System.getProperty("test.acceptors")),Integer.parseInt("test.selectors"));
+      connector = new ServerConnector(server,Integer.parseInt(System.getProperty("test.acceptors")),Integer.parseInt(System.getProperty("test.selectors")));
     }else {
       connector = new ServerConnector(server);
     }
