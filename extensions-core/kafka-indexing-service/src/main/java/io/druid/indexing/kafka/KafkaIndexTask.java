@@ -39,6 +39,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import com.metamx.emitter.EmittingLogger;
+import io.druid.CollectMetrics;
 import io.druid.data.input.Committer;
 import io.druid.data.input.InputRow;
 import io.druid.data.input.impl.InputRowParser;
@@ -79,6 +80,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetOutOfRangeException;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.avaje.metric.TimedEvent;
 import org.joda.time.DateTime;
 
 import javax.ws.rs.Consumes;
@@ -401,8 +403,14 @@ public class KafkaIndexTask extends AbstractTask implements ChatHandler
             possiblyResetOffsetsOrWait(e.offsetOutOfRangePartitions(), consumer, toolbox);
             stillReading = ioConfig.isPauseAfterRead() || !assignment.isEmpty();
           }
+          //TODO: Druid-PE multi-threads here
+          //metrics for consumer
+          CollectMetrics.consumerPollSize.markEvents(records.count());
+          TimedEvent eventConsumerAllRecordTime = CollectMetrics.consumerAllRecordTime.startEvent();
 
           for (ConsumerRecord<byte[], byte[]> record : records) {
+            TimedEvent eventConsumerOneRecordTime = CollectMetrics.consumerOneRecordTime.startEvent();
+
             if (log.isTraceEnabled()) {
               log.trace(
                   "Got topic[%s] partition[%d] offset[%,d].",
@@ -491,7 +499,9 @@ public class KafkaIndexTask extends AbstractTask implements ChatHandler
               assignPartitions(consumer, topic, assignment);
               stillReading = ioConfig.isPauseAfterRead() || !assignment.isEmpty();
             }
+            eventConsumerOneRecordTime.endWithSuccess();
           }
+          eventConsumerAllRecordTime.endWithSuccess();
         }
       }
       finally {
