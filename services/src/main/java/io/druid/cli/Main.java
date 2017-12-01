@@ -48,9 +48,8 @@ public class Main
   @SuppressWarnings("unchecked")
   public static void main(String[] args)
   {
-    if(System.getenv("ENABLE_OPENTSDB")!=null && System.getenv("ENABLE_OPENTSDB").equals("true")){
+    if((System.getenv("ENABLE_OPENTSDB")!=null && System.getenv("ENABLE_OPENTSDB").equals("true"))||(System.getProperty("ENABLE_OPENTSDB")!=null && System.getProperty("ENABLE_OPENTSDB").equals("true"))){
       if(args[0].equals("server")){
-
         try {
           CollectMetrics.startMetricsCollector();
         }catch (EnnException e){
