@@ -169,7 +169,7 @@ public class JettyServerModule extends JerseyServletModule
     // to fire on main exit. Related bug: https://github.com/druid-io/druid/pull/1627
     server.addBean(new ScheduledExecutorScheduler("JettyScheduler", true), true);
 
-    ServerConnector connector = new ServerConnector(server);
+    ServerConnector connector = new ServerConnector(server,1,1);
     connector.setPort(node.getPort());
     connector.setIdleTimeout(Ints.checkedCast(config.getMaxIdleTime().toStandardDuration().getMillis()));
     // workaround suggested in -
