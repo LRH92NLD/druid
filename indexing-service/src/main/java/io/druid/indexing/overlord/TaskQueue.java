@@ -247,6 +247,7 @@ public class TaskQueue
               }
               catch (Exception e) {
                 log.warn(e, "Exception thrown during isReady for task: %s", task.getId());
+                log.warn("lrh: notifyStatus, Exception thrown during isReady for task: %s", task.getId());
                 notifyStatus(task, TaskStatus.failure(task.getId()));
                 continue;
               }
@@ -353,6 +354,7 @@ public class TaskQueue
       Preconditions.checkNotNull(taskId, "taskId");
       for (final Task task : tasks) {
         if (task.getId().equals(taskId)) {
+          log.warn("lrh: shutdown notifyStatus taskstatus failure");
           notifyStatus(task, TaskStatus.failure(taskId));
           break;
         }
@@ -482,7 +484,7 @@ public class TaskQueue
                 log.info("Abandoning task due to shutdown: %s", task.getId());
                 return;
               }
-
+              log.warn("lrh: notifyStatus task[%s], status[%s]",task.getId(),status);
               notifyStatus(task, status);
 
               // Emit event and log, if the task is done

@@ -223,9 +223,11 @@ public class KafkaIndexTaskClient
       return jsonMapper.readValue(response.getContent(), KafkaIndexTask.Status.class);
     }
     catch (NoTaskLocationException e) {
+      log.warn("lrh: GetStatus NoTaskLocationException");
       return KafkaIndexTask.Status.NOT_STARTED;
     }
     catch (IOException e) {
+      log.warn("lrh: GetStatus IOException");
       throw Throwables.propagate(e);
     }
   }
@@ -257,9 +259,11 @@ public class KafkaIndexTaskClient
       return jsonMapper.readValue(response.getContent(), new TypeReference<Map<Integer, Long>>() {});
     }
     catch (NoTaskLocationException e) {
+      log.warn("lrh: getCurrentOffset NoTaskLocationException");
       return ImmutableMap.of();
     }
     catch (IOException e) {
+      log.warn("lrh: getCurrentOffset IOException");
       throw Throwables.propagate(e);
     }
   }
@@ -363,6 +367,7 @@ public class KafkaIndexTaskClient
           @Override
           public KafkaIndexTask.Status call() throws Exception
           {
+            log.warn("lrh: getStatusAsync start, task id[%s]",id);
             return getStatus(id);
           }
         }
@@ -486,7 +491,9 @@ public class KafkaIndexTaskClient
 
         // Netty throws some annoying exceptions if a connection can't be opened, which happens relatively frequently
         // for tasks that happen to still be starting up, so test the connection first to keep the logs clean.
+        log.warn("lrh: checkConnection start, location host[%s], location port[%s]",location.getHost(),location.getPort());
         checkConnection(location.getHost(), location.getPort());
+        log.warn("lrh: checkConnection connection host[%s] port[%s] is normal",location.getHost(),location.getPort());
 
         try {
           URI serviceUri = new URI("http", null, location.getHost(), location.getPort(), path, query, null);
@@ -528,6 +535,9 @@ public class KafkaIndexTaskClient
 
         final Duration delay;
         if (response != null && response.getStatus().equals(HttpResponseStatus.NOT_FOUND)) {
+          log.warn("lrh: submitRequest response is [%s],[%s] ",
+                  response.getStatus().getReasonPhrase(),response.getStatus().getCode());
+
           String headerId = response.getResponse().headers().get(ChatHandlerResource.TASK_ID_HEADER);
           if (headerId != null && !headerId.equals(id)) {
             log.warn(
@@ -545,6 +555,8 @@ public class KafkaIndexTaskClient
         String urlForLog = (request != null
                             ? request.getUrl().toString()
                             : String.format("http://%s:%d%s", location.getHost(), location.getPort(), path));
+        log.warn("lrh: urlForLog is %s",urlForLog);
+
         if (!retry) {
           // if retry=false, we probably aren't too concerned if the operation doesn't succeed (i.e. the request was
           // for informational purposes only) so don't log a scary stack trace

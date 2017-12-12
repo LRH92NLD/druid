@@ -849,6 +849,7 @@ public class KafkaSupervisor implements Supervisor
 
                         // update partitionGroups with the publishing task's offsets (if they are greater than what is
                         // existing) so that the next tasks will start reading from where this task left off
+                        log.warn("lrh: discovertask to pendingCompleteGroup,get currentOffsets start");
                         Map<Integer, Long> publishingTaskCurrentOffsets = taskClient.getCurrentOffsets(taskId, true);
 
                         for (Map.Entry<Integer, Long> entry : publishingTaskCurrentOffsets.entrySet()) {

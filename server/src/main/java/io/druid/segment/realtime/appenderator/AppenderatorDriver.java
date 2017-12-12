@@ -572,6 +572,7 @@ public class AppenderatorDriver implements Closeable
               return segmentsAndMetadata;
             }
             catch (InterruptedException e) {
+              log.warn("lrh: publish interruptedException");
               throw e;
             }
             catch (Exception e) {
