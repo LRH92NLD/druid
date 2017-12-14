@@ -34,6 +34,7 @@ import com.google.inject.name.Names;
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Command;
 import io.airlift.airline.Option;
+import io.druid.CollectMetrics;
 import io.druid.client.cache.CacheConfig;
 import io.druid.client.coordinator.CoordinatorClient;
 import io.druid.guice.Binders;
@@ -287,6 +288,7 @@ public class CliPeon extends GuiceRunnable
               public void run()
               {
                 log.info("Running shutdown hook");
+                CollectMetrics.stopMetricsThread();
                 lifecycle.stop();
               }
             }
