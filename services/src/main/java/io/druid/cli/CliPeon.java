@@ -305,6 +305,7 @@ public class CliPeon extends GuiceRunnable
         }
 
         // Explicitly call lifecycle stop, dont rely on shutdown hook.
+        CollectMetrics.stopMetricsThread();
         lifecycle.stop();
         Runtime.getRuntime().removeShutdownHook(hook);
       }
