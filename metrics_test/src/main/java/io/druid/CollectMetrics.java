@@ -31,10 +31,12 @@ import org.avaje.metric.MetricManager;
 import org.avaje.metric.TimedMetric;
 import org.avaje.metric.ValueMetric;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 
 public class CollectMetrics {
-    private static Thread metricThread;
+    private static EnnMetricsThread metricsRunnable;
+    private static Thread metricsThread;
 
     public static void startMetricsCollector()
             throws EnnException, UnknownHostException {
@@ -51,16 +53,20 @@ public class CollectMetrics {
                                         .setPort(Integer.parseInt(port))
                                         .build()));
 
-        EnnMetricsThread metricsThread = injector.getInstance(EnnMetricsThread.class);
-        Thread thread = new Thread(metricsThread);
-        thread.setDaemon(true);
-        metricThread =thread;
-        thread.start();
+        metricsRunnable = injector.getInstance(EnnMetricsThread.class);
+        metricsThread = new Thread(metricsRunnable);
+        metricsThread.setDaemon(true);
+        metricsThread.start();
     }
 
     public static void stopMetricsThread() {
-        if(metricThread!=null){
-        metricThread.interrupt();
+        if(metricsRunnable !=null){
+            try {
+                metricsRunnable.close();
+                metricsThread.interrupt();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
     //time for query
