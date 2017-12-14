@@ -296,17 +296,21 @@ public class CliPeon extends GuiceRunnable
         Runtime.getRuntime().addShutdownHook(hook);
         injector.getInstance(ExecutorLifecycle.class).join();
 
-        // Sanity check to help debug unexpected non-daemon threads
-        final Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-        for (Thread thread : threadSet) {
-          if (!thread.isDaemon() && thread != Thread.currentThread()) {
-            log.info("Thread [%s] is non daemon.", thread);
+          log.warn("Trying to shutdown metrics thread.");
+          CollectMetrics.stopMetricsThread();
+          log.warn(CollectMetrics.isClosed()+"");
+          // Sanity check to help debug unexpected non-daemon threads
+          final Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+          for (Thread thread : threadSet) {
+            if (!thread.isDaemon() && thread != Thread.currentThread()) {
+              log.info("Thread [%s] is non daemon.", thread);
           }
         }
 
-        // Explicitly call lifecycle stop, dont rely on shutdown hook.
-        CollectMetrics.stopMetricsThread();
+          // Explicitly call lifecycle stop, dont rely on shutdown hook.
+
         lifecycle.stop();
+        log.warn("Life cycle stopped");
         Runtime.getRuntime().removeShutdownHook(hook);
       }
       catch (Throwable t) {
