@@ -277,6 +277,7 @@ public class CliPeon extends GuiceRunnable
   @Override
   public void run()
   {
+    log.warn("hahahahahahahahaha  1701" );
     try {
       Injector injector = makeInjector();
       try {
@@ -294,6 +295,7 @@ public class CliPeon extends GuiceRunnable
             }
         );
         Runtime.getRuntime().addShutdownHook(hook);
+        injector.getInstance(ExecutorLifecycle.class).join();
         injector.getInstance(ExecutorLifecycle.class).join();
 
           log.warn("Trying to shutdown metrics thread.");
