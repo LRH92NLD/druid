@@ -34,6 +34,8 @@ import org.avaje.metric.ValueMetric;
 import java.net.UnknownHostException;
 
 public class CollectMetrics {
+    private static Thread metricThread;
+
     public static void startMetricsCollector()
             throws EnnException, UnknownHostException {
         String hostname= System.getenv("OPENTSDB_HOSTNAME")==null?System.getProperty("OPENTSDB_HOSTNAME"):System.getenv("OPENTSDB_HOSTNAME");
@@ -49,10 +51,17 @@ public class CollectMetrics {
                                         .setPort(Integer.parseInt(port))
                                         .build()));
 
-        EnnMetricsThread metricsTread = injector.getInstance(EnnMetricsThread.class);
-        Thread thread = new Thread(metricsTread);
+        EnnMetricsThread metricsThread = injector.getInstance(EnnMetricsThread.class);
+        Thread thread = new Thread(metricsThread);
         thread.setDaemon(true);
+        metricThread =thread;
         thread.start();
+    }
+
+    public static void stopMetricsThread() {
+        if(metricThread!=null){
+        metricThread.interrupt();
+        }
     }
     //time for query
     public static final String queryTimeName = "metrics.collect.test.QueryTime";
@@ -64,8 +73,8 @@ public class CollectMetrics {
     public static final String queryNodeTtfbName = "metrics.collect.test.QueryNodeTtfb";//post http request and wait first byte back
     public static final String queryNodeTimeName = "metrics.collect.test.QueryNodeTime";//historical results transfer time
     public static final String querySegmentTimeName = "metrics.collect.test.SingleSegmentQueryTime";
-    public static final String queryNodeMergeResultsName = "metrics.collect.test.MergeResultsOnSingleNode"; //all query type call this method
 
+    public static final String queryNodeMergeResultsName = "metrics.collect.test.MergeResultsOnSingleNode"; //all query type call this method
     //time for scan and compute
     public static final String querySegmentTimeseriesAggregateName = "metrics.collect.test.TimeseriesAggregateOnSingleSegment";
     public static final String querySegmentTopNAggregateName = "metrics.collect.test.TopNAggregateOnSingleSegment";//include aggregate and sort
@@ -74,8 +83,8 @@ public class CollectMetrics {
     public static final String querySegmentSearchComputeName = "metrics.collect.test.SearchComputeOnSingleSegment";//include scan and compute
     public static final String querySegmentSearchCursorExecutorName = "metrics.collect.test.SearchExecuteBaseCursor";//unsupport index dimensions include make cursor
     public static final String querySegmentSearchIndexExecutorName = "metrics.collect.test.SearchExecuteBaseIndex";//support index dimensions
-    public static final String querySegmentSelectComputeName = "metrics.collect.test.SelectComputeOnSingleSegment";//scan and compute
 
+    public static final String querySegmentSelectComputeName = "metrics.collect.test.SelectComputeOnSingleSegment";//scan and compute
     //time for io
     public static final String querySegmentBitmapConstructionName = "metrics.collect.test.BitmapConstructionOnSegment";//prefilters not null construct bitmap
     public static final String querySegmentMakeCursorName = "metrics.collect.test.SegmentMakeCursor";//queryableindex cursor create after postfilters
@@ -83,19 +92,19 @@ public class CollectMetrics {
     public static final String queryLoadIndexOnDiskName = "metrics.collect.test.LoadIndexOnDisk";//index files unzip for loading segment in disk
     public static final String queryLoadSegmentOnDiskName = "metrics.collect.test.LoadSegmentOnDisk";
     public static final String queryLoadBitmapOffHeapName = "metrics.collect.test.LoadBitmapOffheap";
-    public static final String queryLoadBitmapOthersName = "metrics.collect.test.LoadBitmapOthers";
 
+    public static final String queryLoadBitmapOthersName = "metrics.collect.test.LoadBitmapOthers";
     //cache hit rate
     public static final String cacheHitBrokerName = "metrics.collect.test.CacheHitBroker";
     public static final String cacheNotHitBrokerName = "metrics.collect.test.CacheNotHitBroker";
     public static final String cacheHitHistoricalName = "metrics.collect.test.CacheHitHistorical";
-    public static final String cacheNotHitHistoricalName = "metrics.collect.test.CacheNotHitHistorical";
 
+    public static final String cacheNotHitHistoricalName = "metrics.collect.test.CacheNotHitHistorical";
     //time for consumer
     public static final String consumerPollSizeName = "metrics.collect.test.ConsumerPollSize";
     public static final String consumerAllRecordTimeName = "metrics.collect.test.ConsumerAllRecordTime";
-    public static final String consumerOneRecordTimeName = "metrics.collect.test.ConsumerOneRecordTime";
 
+    public static final String consumerOneRecordTimeName = "metrics.collect.test.ConsumerOneRecordTime";
     public static TimedMetric queryTime = MetricManager.getTimedMetric(CollectMetrics.queryTimeName);
     public static TimedMetric queryTimeSequence = MetricManager.getTimedMetric(CollectMetrics.queryTimeSequenceName);
     public static TimedMetric queryTimeToYielder = MetricManager.getTimedMetric(CollectMetrics.queryTimeToYielderName);
@@ -127,8 +136,8 @@ public class CollectMetrics {
     public static CounterMetric cacheNotHitHistorical = MetricManager.getCounterMetric(CollectMetrics.cacheNotHitHistoricalName);
     public static CounterMetric consumerPollSize = MetricManager.getCounterMetric(CollectMetrics.consumerPollSizeName);
     public static TimedMetric consumerAllRecordTime = MetricManager.getTimedMetric(CollectMetrics.consumerAllRecordTimeName);
-    public static TimedMetric consumerOneRecordTime = MetricManager.getTimedMetric(CollectMetrics.consumerOneRecordTimeName);
 
+    public static TimedMetric consumerOneRecordTime = MetricManager.getTimedMetric(CollectMetrics.consumerOneRecordTimeName);
 }
 
 
