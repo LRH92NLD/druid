@@ -27,6 +27,7 @@ import com.metamx.http.client.HttpClientInit;
 import io.druid.guice.JsonConfigProvider;
 import io.druid.guice.LazySingleton;
 import io.druid.guice.annotations.Global;
+import io.druid.java.util.common.logger.Logger;
 
 import java.lang.annotation.Annotation;
 
@@ -85,6 +86,8 @@ public class HttpClientModule implements Module
 
   public static class HttpClientProvider extends AbstractHttpClientProvider<HttpClient>
   {
+    private static final Logger log = new Logger(HttpClientProvider.class);
+
     public HttpClientProvider()
     {
     }
@@ -114,6 +117,10 @@ public class HttpClientModule implements Module
       if (getSslContextBinding() != null) {
         builder.withSslContext(getSslContextBinding().getProvider().get());
       }
+
+      log.warn("lrh: annotation is " + this.getConfigKey().getAnnotation().annotationType().getCanonicalName());
+      log.warn("lrh: httpClientConfig is {numConnections:%s, readTimeout:%s, numMaxThreads:%s}",
+              config.getNumConnections(),config.getReadTimeout(),config.getNumMaxThreads());
       return HttpClientInit.createClient(builder.build(), LifecycleUtils.asMmxLifecycle(getLifecycleProvider().get()));
     }
   }
