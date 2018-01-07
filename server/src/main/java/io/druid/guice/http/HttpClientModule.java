@@ -118,9 +118,12 @@ public class HttpClientModule implements Module
         builder.withSslContext(getSslContextBinding().getProvider().get());
       }
 
+      if(this.getConfigKey() != null && this.getConfigKey().getAnnotation() != null){
       log.warn("lrh: annotation is " + this.getConfigKey().getAnnotation().annotationType().getCanonicalName());
+      }
       log.warn("lrh: httpClientConfig is {numConnections:%s, readTimeout:%s, numMaxThreads:%s}",
               config.getNumConnections(),config.getReadTimeout(),config.getNumMaxThreads());
+
       return HttpClientInit.createClient(builder.build(), LifecycleUtils.asMmxLifecycle(getLifecycleProvider().get()));
     }
   }
