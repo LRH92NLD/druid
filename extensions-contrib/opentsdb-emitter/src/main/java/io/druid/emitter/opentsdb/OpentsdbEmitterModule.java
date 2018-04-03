@@ -33,41 +33,43 @@ import com.metamx.emitter.core.Emitter;
 import io.druid.guice.JsonConfigProvider;
 import io.druid.guice.ManageLifecycle;
 import io.druid.initialization.DruidModule;
+
 import java.util.Collections;
 import java.util.List;
 
 /**
  * Created by liangrenhua on 18-2-6.
  */
-public class OpentsdbEmitterModule implements DruidModule {
-    private static final String EMITTER_TYPE = "opentsdb";
+public class OpentsdbEmitterModule implements DruidModule
+{
+  private static final String EMITTER_TYPE = "opentsdb";
 
-    @Override
-    public List<? extends Module> getJacksonModules() {return Collections.EMPTY_LIST;}
+  @Override
+  public List<? extends Module> getJacksonModules() {return Collections.EMPTY_LIST;}
 
-    @Override
-    public void configure(Binder binder)
-    {
-        JsonConfigProvider.bind(binder, "druid.emitter." + EMITTER_TYPE, OpentsdbEmitterConfig.class);
-    }
+  @Override
+  public void configure(Binder binder)
+  {
+    JsonConfigProvider.bind(binder, "druid.emitter." + EMITTER_TYPE, OpentsdbEmitterConfig.class);
+  }
 
-    @Provides
-    @ManageLifecycle
-    @Named(EMITTER_TYPE)
-    public Emitter getEmitter(OpentsdbEmitterConfig opentsdbEmitterConfig, ObjectMapper mapper, final Injector injector)
-    {
-        List<Emitter> emitters = Lists.transform(
-                opentsdbEmitterConfig.getAlertEmitters(),
-                new Function<String, Emitter>()
-                {
-                    @Override
-                    public Emitter apply(String s)
-                    {
-                        return injector.getInstance(Key.get(Emitter.class, Names.named(s)));
-                    }
-                }
-        );
-        return new OpentsdbEmitter(opentsdbEmitterConfig, emitters);
-    }
+  @Provides
+  @ManageLifecycle
+  @Named(EMITTER_TYPE)
+  public Emitter getEmitter(OpentsdbEmitterConfig opentsdbEmitterConfig, ObjectMapper mapper, final Injector injector)
+  {
+    List<Emitter> emitters = Lists.transform(
+        opentsdbEmitterConfig.getAlertEmitters(),
+        new Function<String, Emitter>()
+        {
+          @Override
+          public Emitter apply(String s)
+          {
+            return injector.getInstance(Key.get(Emitter.class, Names.named(s)));
+          }
+        }
+    );
+    return new OpentsdbEmitter(opentsdbEmitterConfig, emitters);
+  }
 
 }

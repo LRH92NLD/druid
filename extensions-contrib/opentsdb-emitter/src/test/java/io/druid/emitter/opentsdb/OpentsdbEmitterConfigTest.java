@@ -32,23 +32,29 @@ import java.util.Collections;
 /**
  * Created by liangrenhua on 18-2-7.
  */
-public class OpentsdbEmitterConfigTest {
-    private ObjectMapper mapper = new DefaultObjectMapper();
+public class OpentsdbEmitterConfigTest
+{
+  private ObjectMapper mapper = new DefaultObjectMapper();
 
-    @Before
-    public void setUp()
-    {
-        mapper.setInjectableValues(new InjectableValues.Std().addValue(ObjectMapper.class, new DefaultObjectMapper()));
-    }
+  @Before
+  public void setUp()
+  {
+    mapper.setInjectableValues(new InjectableValues.Std().addValue(ObjectMapper.class, new DefaultObjectMapper()));
+  }
 
-    @Test
-    public void testSerDeserKafkaEmitterConfig() throws IOException
-    {
-        OpentsdbEmitterConfig opentsdbEmitterConfig = new OpentsdbEmitterConfig("hostname", (long) 33554432,
-                "clusterNameTest", Collections.<String>emptyList(), (long) 10, (long) 5);
-        String opentsdbEmitterConfigString = mapper.writeValueAsString(opentsdbEmitterConfig);
-        OpentsdbEmitterConfig opentsdbEmitterConfigExpected = mapper.reader(OpentsdbEmitterConfig.class)
-                                                                    .readValue(opentsdbEmitterConfigString);
-        Assert.assertEquals(opentsdbEmitterConfigExpected, opentsdbEmitterConfig);
-    }
+  @Test
+  public void testSerDeserKafkaEmitterConfig() throws IOException
+  {
+    OpentsdbEmitterConfig opentsdbEmitterConfig = new OpentsdbEmitterConfig("hostname",
+                                                                            (long) 33554432,
+                                                                            "clusterNameTest",
+                                                                            Collections.<String>emptyList(),
+                                                                            (long) 10,
+                                                                            (long) 5
+    );
+    String opentsdbEmitterConfigString = mapper.writeValueAsString(opentsdbEmitterConfig);
+    OpentsdbEmitterConfig opentsdbEmitterConfigExpected = mapper.reader(OpentsdbEmitterConfig.class)
+                                                                .readValue(opentsdbEmitterConfigString);
+    Assert.assertEquals(opentsdbEmitterConfigExpected, opentsdbEmitterConfig);
+  }
 }
