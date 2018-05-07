@@ -109,6 +109,10 @@
                                 <argument>io.druid.extensions:druid-stats</argument>
                                 <argument>-c</argument>
                                 <argument>io.druid.extensions:druid-examples</argument>
+                                <argument>-c</argument>
+                                <argument>io.druid.extensions.contrib:opentsdb-emitter</argument>
+                                <argument>-c</argument>
+                                <argument>io.druid.extensions.contrib:kafka-emitter</argument>
                                 <argument>${druid.distribution.pulldeps.opts}</argument>
                             </arguments>
                         </configuration>
@@ -238,6 +242,27 @@
                                         <argument>io.druid.extensions.contrib:druid-time-min-max</argument>
                                         <argument>-c</argument>
                                         <argument>io.druid.extensions.contrib:druid-virtual-columns</argument>
+                                        <argument>-c</argument>
+                                        <argument>io.druid.extensions.contrib:opentsdb-emitter</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>opentsdb-emitter-tarball</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>tar</executable>
+                                    <arguments>
+                                        <argument>-C</argument>
+                                        <argument>${project.build.directory}/extensions</argument>
+                                        <argument>-czvf</argument>
+                                        <argument>
+                                            ${project.build.directory}/opentsdb-emitter-${project.parent.version}.tar.gz
+                                        </argument>
+                                        <argument>opentsdb-emitter</argument>
                                     </arguments>
                                 </configuration>
                             </execution>

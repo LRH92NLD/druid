@@ -40,19 +40,13 @@ import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
 
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Created by liangrenhua on 18-2-6.
- */
 public class OpentsdbEmitter implements Emitter
 {
   private static Logger log = new Logger(OpentsdbEmitter.class);
@@ -71,6 +65,8 @@ public class OpentsdbEmitter implements Emitter
   private final String KEY_VALUE = "value";
   private final String KEY_TAGS = "tags";
   private final String TAG_CLUSTER = "clusterName";
+  private final String TAG_HOST = "host";
+  private final String TAG_SERVICE = "service";
 
   public OpentsdbEmitter(OpentsdbEmitterConfig config, List<Emitter> emitterList)
   {
@@ -172,9 +168,25 @@ public class OpentsdbEmitter implements Emitter
   private String convertEventToJsonString(ServiceMetricEvent serviceMetricEvent)
   {
     try {
-      Map<String, Object> event = new HashMap<>(serviceMetricEvent.toMap());
       JSONObject object = new JSONObject();
-      if (event.containsKey(KEY_TIMESTAMP) && event.containsKey(KEY_METRIC) && event.containsKey(KEY_VALUE)) {
+      String regex = "([^a-zA-Z0-9_./\\-])";
+      long timestamp = serviceMetricEvent.getCreatedTime().getMillis() / 1000L;
+      String metric = serviceMetricEvent.getMetric().replaceAll(regex, "_");
+      Number value = serviceMetricEvent.getValue();
+      String host = serviceMetricEvent.getHost().replaceAll(regex, "_");
+      String service = serviceMetricEvent.getService().replace(regex, "_");
+      JSONObject tags = new JSONObject();
+      tags.put(TAG_CLUSTER, clusterName);
+      tags.put(TAG_HOST, host);
+      tags.put(TAG_SERVICE, service);
+      object.put(KEY_TIMESTAMP, timestamp);
+      object.put(KEY_METRIC, metric);
+      object.put(KEY_VALUE, value);
+      object.put(KEY_TAGS, tags);
+      return object.toJSONString();
+
+      //Map<String, Object> event = new HashMap<>(serviceMetricEvent.toMap());
+      /*if (event.containsKey(KEY_TIMESTAMP) && event.containsKey(KEY_METRIC) && event.containsKey(KEY_VALUE)) {
         String regex = "([^a-zA-Z0-9_./\\-])";
         long timestamp = Timestamp.valueOf(event.get(KEY_TIMESTAMP).toString()
                                                 .replace("T", " ").replace("Z", "")).getTime();
@@ -185,6 +197,7 @@ public class OpentsdbEmitter implements Emitter
         event.remove(KEY_VALUE);
         event.put(TAG_CLUSTER, clusterName);
         JSONObject tags = new JSONObject();
+        //the max size of tags is 8. There is a bug. query/time has 12 tags
         for (Map.Entry<String, Object> entry : event.entrySet()) {
           String tagKey = entry.getKey().replaceAll(regex, "_");
           String tagValue = entry.getValue().toString().replaceAll(regex, "_");
@@ -195,7 +208,7 @@ public class OpentsdbEmitter implements Emitter
         object.put(KEY_VALUE, value);
         object.put(KEY_TAGS, tags);
         return object.toJSONString();
-      }
+      }*/
     }
     catch (Exception e) {
       log.error(e, e.getMessage());

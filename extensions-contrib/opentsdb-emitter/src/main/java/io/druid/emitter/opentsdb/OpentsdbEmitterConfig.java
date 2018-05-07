@@ -26,9 +26,6 @@ import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by liangrenhua on 18-2-6.
- */
 public class OpentsdbEmitterConfig
 {
   private final static long DEFAULT_BUFFER_SIZE = 33554432;

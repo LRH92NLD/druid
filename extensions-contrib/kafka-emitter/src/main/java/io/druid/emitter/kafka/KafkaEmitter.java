@@ -74,7 +74,7 @@ public class KafkaEmitter implements Emitter
                                                       .getOrDefault(ProducerConfig.BUFFER_MEMORY_CONFIG, "33554432"));
     this.metricQueue = new MemoryBoundLinkedBlockingQueue<>(queueMemoryBound);
     this.alertQueue = new MemoryBoundLinkedBlockingQueue<>(queueMemoryBound);
-    this.scheduler = Executors.newScheduledThreadPool(3);
+    this.scheduler = Executors.newScheduledThreadPool(6);
     this.metricLost = new AtomicLong(0L);
     this.alertLost = new AtomicLong(0L);
     this.invalidLost = new AtomicLong(0L);
@@ -124,8 +124,9 @@ public class KafkaEmitter implements Emitter
     scheduler.scheduleWithFixedDelay(this::sendAlertToKafka, 10, 10, TimeUnit.SECONDS);
     scheduler.scheduleWithFixedDelay(() -> {
       log.info("Message lost counter: metricLost=[%d], alertLost=[%d], invalidLost=[%d]",
-               metricLost.get(), alertLost.get(), invalidLost.get());
-    }, 5, 5, TimeUnit.MINUTES);
+               metricLost.get(), alertLost.get(), invalidLost.get()
+      );
+    }, 1, 1, TimeUnit.MINUTES);
     log.info("Starting Kafka Emitter.");
   }
 

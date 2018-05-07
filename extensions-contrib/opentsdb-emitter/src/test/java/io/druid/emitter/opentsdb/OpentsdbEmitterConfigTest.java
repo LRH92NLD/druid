@@ -29,9 +29,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Collections;
 
-/**
- * Created by liangrenhua on 18-2-7.
- */
 public class OpentsdbEmitterConfigTest
 {
   private ObjectMapper mapper = new DefaultObjectMapper();

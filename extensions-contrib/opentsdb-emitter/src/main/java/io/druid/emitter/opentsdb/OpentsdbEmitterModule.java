@@ -37,9 +37,6 @@ import io.druid.initialization.DruidModule;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by liangrenhua on 18-2-6.
- */
 public class OpentsdbEmitterModule implements DruidModule
 {
   private static final String EMITTER_TYPE = "opentsdb";
